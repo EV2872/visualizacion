@@ -5,18 +5,20 @@ from plotnine import (
     element_text, geom_line, geom_point
 )
 
-def crearGraficoDeLineas(df, x_="anio", y_="porcentaje", color_="medida", group__="medida", ruta: str = "default"):
-    y_min = df[y_].min()
-    y_max = df[y_].max()
+def crearGraficoDeLineas(df, ruta: str, titulo: str, subtitulo: str, 
+                          x: tuple[str, str], y: tuple[str, str], 
+                          color: tuple[str, str], group: str):
+    y_min = df[y[0]].min()
+    y_max = df[y[0]].max()
     
     grafico_lineas = (
         ggplot(
             df,
             aes(
-                x=x_,
-                y=y_,
-                color=color_,
-                group=group__
+                x=x[0],
+                y=y[0],
+                color=color[0],
+                group=group
             )
         )
         + geom_line(size=1.2)
@@ -26,11 +28,11 @@ def crearGraficoDeLineas(df, x_="anio", y_="porcentaje", color_="medida", group_
             limits=[max(0, int(y_min) - 5), int(y_max) + 5]
         )
         + labs(
-            title="Evolución de la composición de la renta en Canarias",
-            subtitle="Por tipo de ingreso (porcentaje sobre la renta total)",
-            x="Año",
-            y="Porcentaje (%)",
-            color="Tipo de ingreso",
+            title=titulo,
+            subtitle=subtitulo,
+            x=x[1],
+            y=y[1],
+            color=color[1],
             caption="Fuente: ISTAC"
         )
         + theme_minimal()
@@ -46,23 +48,26 @@ def crearGraficoDeLineas(df, x_="anio", y_="porcentaje", color_="medida", group_
     print(grafico_lineas)
     grafico_lineas.save(f"graficos/{ruta}.png", dpi=150)
 
-def crearGraficoDeAreas(df, x_="anio", y_="porcentaje", fill_="medida", ruta: str = "default"):
+
+def crearGraficoDeAreas(df, ruta: str, titulo: str, subtitulo: str,
+                        x: tuple[str, str], y: tuple[str, str], 
+                        fill: tuple[str, str]):
     grafico_area = (
         ggplot(
             df,
             aes(
-                x=x_,
-                y=y_,
-                fill=fill_
+                x=x[0],
+                y=y[0],
+                fill=fill[0]
             )
         )
         + geom_area(alpha=0.85, position="stack")
         + labs(
-            title="Evolución de la composición de la renta",
-            subtitle="Por tipo de ingreso (porcentaje sobre la renta total)",
-            x="Año",
-            y="Porcentaje (%)",
-            fill="Tipo de ingreso",
+            title=titulo,
+            subtitle=subtitulo,
+            x=x[1],
+            y=y[1],
+            fill=fill[1],
             caption="Fuente: ISTAC"
         )
         + theme_minimal()
@@ -84,85 +89,90 @@ print(df.head())
 # Eliminamos caracteres en blanco
 df.columns = df.columns.str.strip()
 
-# Separamos en comunidad autonoma, provincia y municipio
-df_municipios = df[df["TERRITORIO_CODE"].str.match(r"^\d{5}$")].copy()
-df_provincias = df[df["TERRITORIO_CODE"].isin(["ES701", "ES702"])].copy()
-df_canarias = df[df["TERRITORIO_CODE"] == "ES70"].copy()
-
-# Filtrar el año más reciente disponible
-anio_max = df["TIME_PERIOD_CODE"].max()
-df_filtrado = df[df["TIME_PERIOD_CODE"] == anio_max].copy()
-
 # Eliminar filas sin valor
-df_filtrado = df_filtrado.dropna(subset=["OBS_VALUE"])
+porcentaje = 'OBS_VALUE'
+df = df.dropna(subset=[porcentaje])
 
-df_filtrado = df_filtrado.rename(columns={
+year = 'TIME_PERIOD_CODE'
+df[year] = df[year].astype(int)
+
+df = df.rename(columns={
     "TERRITORIO#es": "municipio",
-    "OBS_VALUE": "renta"
-})
-
-grafico = (
-    ggplot(df_filtrado, aes(x="reorder(municipio, -renta)", y="renta"))
-    + geom_col(fill="#2196F3", alpha=0.85)
-    + coord_flip()
-    + labs(
-        title=f"Distribución de Renta en Canarias ({anio_max})",
-        x="Municipio",
-        y="Renta media (€)"
-    )
-    + theme_minimal()
-    + theme(figure_size=(12, 18))
-)
-
-print(grafico)
-grafico.save("graficos/grafico_prototipo.png", dpi=150)
-
-
-# Limpieza
-df_canarias = df_canarias.dropna(subset=["OBS_VALUE"])
-df_provincias = df_provincias.dropna(subset=["OBS_VALUE"])
-df_municipios = df_municipios.dropna(subset=["OBS_VALUE"])
-
-df_canarias["TIME_PERIOD_CODE"] = df_canarias["TIME_PERIOD_CODE"].astype(int)
-df_provincias["TIME_PERIOD_CODE"] = df_provincias["TIME_PERIOD_CODE"].astype(int)
-df_municipios["TIME_PERIOD_CODE"] = df_municipios["TIME_PERIOD_CODE"].astype(int)
-
-df_canarias = df_canarias.rename(columns={
-    "TIME_PERIOD_CODE": "anio",
-    "OBS_VALUE": "porcentaje",
+    year: "anio",
+    porcentaje: "porcentaje",
     "MEDIDAS#es": "medida"
 })
 
-df_provincias = df_provincias.rename(columns={
-    "TIME_PERIOD_CODE": "anio",
-    "OBS_VALUE": "porcentaje",
-    "MEDIDAS#es": "medida"
-})
+# Separamos en comunidad autonoma, provincia y municipio
+territorio_code = 'TERRITORIO_CODE'
+df_municipios = df[df[territorio_code].str.match(r"^\d{5}$")].copy()
+df_provincias = df[df[territorio_code].isin(["ES701", "ES702"])].copy()
+df_canarias = df[df[territorio_code] == "ES70"].copy()
 
-df_municipios = df_municipios.rename(columns={
-    "TIME_PERIOD_CODE": "anio",
-    "OBS_VALUE": "porcentaje",
-    "MEDIDAS#es": "medida"
-})
+subtitulo = 'Por tipo de ingreso (porcentaje sobre la renta total)'
+x = ['anio', 'Año']
+y = ['porcentaje', 'Porcentaje (%)']
+color = ['medida', 'Tipo de ingreso']
+fill = ['medida', 'Tipo de ingreso']
+group = 'medida'
 
 # Comunidad
 # Gráfico de líneas
-crearGraficoDeLineas(df_canarias, ruta='evolucion_renta_canarias')
+crearGraficoDeLineas(df_canarias, 
+                      ruta='evolucion_renta_canarias',
+                      titulo='Evolución de la composición de la renta en Canarias',
+                      subtitulo=subtitulo,
+                      x=x,
+                      y=y,
+                      color=color,
+                      group=group)
 
 # Gráfico de áreas apiladas
-crearGraficoDeAreas(df_canarias, ruta='area_apilada_renta_canarias')
+crearGraficoDeAreas(df_canarias, 
+                    ruta='area_apilada_renta_canarias',
+                    titulo="Evolución de la composición de la renta en Canarias",
+                    subtitulo=subtitulo,
+                    x=x,
+                    y=y,
+                    fill=fill)
 
 # Provincias
 # Tenerife
 # Gráfico de líneas
-crearGraficoDeLineas(df_provincias[df_provincias["TERRITORIO_CODE"].isin(["ES702"])].copy(), ruta='evolucion_renta_tenerife')
+df_provincia_tenerife = df_provincias[df_provincias["TERRITORIO_CODE"].isin(["ES702"])].copy()
+crearGraficoDeLineas(df_provincia_tenerife, 
+                      ruta='evolucion_renta_tenerife',
+                      titulo='Evolución de la composición de la renta en la provincia de Tenerife',
+                      subtitulo=subtitulo,
+                      x=x,
+                      y=y,
+                      color=color,
+                      group=group)
 # Gráfico de áreas apiladas
-crearGraficoDeAreas(df_provincias[df_provincias["TERRITORIO_CODE"].isin(["ES702"])].copy(), ruta='area_apilada_renta_tenerife')
+crearGraficoDeAreas(df_provincia_tenerife, 
+                    ruta='area_apilada_renta_tenerife',
+                    titulo="Evolución de la composición de la renta en la provincia de Tenerife",
+                    subtitulo=subtitulo,
+                    x=x,
+                    y=y,
+                    fill=fill)
 
 # Gran canaria
 # Gráfico de líneas
-crearGraficoDeLineas(df_provincias[df_provincias["TERRITORIO_CODE"].isin(["ES701"])].copy(), ruta='evolucion_renta_grancanaria')
+df_provincia_gran_canaria = df_provincias[df_provincias["TERRITORIO_CODE"].isin(["ES701"])].copy()
+crearGraficoDeLineas(df_provincia_gran_canaria, 
+                      ruta='evolucion_renta_grancanaria',
+                      titulo='Evolución de la composición de la renta en la provincia de Gran Canaria',
+                      subtitulo=subtitulo,
+                      x=x,
+                      y=y,
+                      color=color,
+                      group=group)
 # Gráfico de áreas apiladas
-crearGraficoDeAreas(df_provincias[df_provincias["TERRITORIO_CODE"].isin(["ES701"])].copy(), ruta='area_apilada_renta_grancanaria')
-
-# Municipios
+crearGraficoDeAreas(df_provincia_gran_canaria, 
+                    ruta='area_apilada_renta_grancanaria',
+                    titulo="Evolución de la composición de la renta en la provincia de Gran Canaria",
+                    subtitulo=subtitulo,
+                    x=x,
+                    y=y,
+                    fill=fill)
