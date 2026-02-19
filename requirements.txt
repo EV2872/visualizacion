@@ -2,3 +2,4 @@ dagster
 dagster-webserver
 pandas
 plotnine
+openpyxl
