@@ -1,6 +1,6 @@
 import pandas as pd
 from plotnine import (
-    geom_area, ggplot, aes, geom_col, coord_flip,
+    geom_area, ggplot, aes,
     labs, scale_y_continuous, theme_minimal, theme,
     element_text, geom_line, geom_point
 )
@@ -40,13 +40,13 @@ def crearGraficoDeLineas(df, ruta: str, titulo: str, subtitulo: str,
             figure_size=(12, 6),
             legend_position="right",
             axis_text_x=element_text(rotation=45),
-            panel_grid_major_y=element_text(color="#E0E0E0"),  # Grid más visible
-            panel_grid_minor_y=element_text(color="#F5F5F5")   # Grid secundario
+            panel_grid_major_y=element_text(color="#E0E0E0"),
+            panel_grid_minor_y=element_text(color="#F5F5F5")
         )
     )
 
     print(grafico_lineas)
-    grafico_lineas.save(f"../graficos/{ruta}.png", dpi=150)
+    grafico_lineas.save(f"graficos/{ruta}.png", dpi=150)
 
 
 def crearGraficoDeAreas(df, ruta: str, titulo: str, subtitulo: str,
@@ -79,10 +79,10 @@ def crearGraficoDeAreas(df, ruta: str, titulo: str, subtitulo: str,
     )
 
     print(grafico_area)
-    grafico_area.save(f"../graficos/{ruta}.png", dpi=150)
+    grafico_area.save(f"graficos/{ruta}.png", dpi=150)
 
 # Cargamos los datos
-df = pd.read_csv("../data/distribucion-renta-canarias.csv", sep=",", encoding="utf-8")
+df = pd.read_csv("data/distribucion-renta-canarias.csv", sep=",", encoding="utf-8")
 print("Columnas:", df.columns.tolist())
 print(df.head())
 
