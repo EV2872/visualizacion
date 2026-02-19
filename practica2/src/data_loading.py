@@ -12,19 +12,15 @@ def renta_canarias_df() -> pd.DataFrame:
         sep=",",
         encoding="utf-8"
     )
-
     df.columns = df.columns.str.strip()
-
     df = df.dropna(subset=["OBS_VALUE"])
     df["TIME_PERIOD_CODE"] = df["TIME_PERIOD_CODE"].astype(int)
-
     df = df.rename(columns={
         "TERRITORIO#es": "municipio",
         "TIME_PERIOD_CODE": "anio",
         "OBS_VALUE": "porcentaje",
         "MEDIDAS#es": "medida"
     })
-
     return df
 
 @asset
@@ -34,21 +30,17 @@ def codislas_df() -> pd.DataFrame:
         sep=";",
         encoding="latin1"
     )
-
     df.columns = df.columns.str.strip().str.lower()
-
     df = df.rename(columns={
         "cpro": "provincia_code",
         "cisla": "isla_code",
         "cmun": "municipio_code",
         "nombre": "nombre_municipio"
     })
-
     df["municipio_code"] = (
         df["provincia_code"].astype(str).str.zfill(2)
         + df["municipio_code"].astype(str).str.zfill(3)
     )
-
     return df
 
 @asset(deps=[renta_canarias_df])

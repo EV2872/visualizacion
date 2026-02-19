@@ -10,7 +10,6 @@ def crearGraficoDeLineas(df, ruta: str, titulo: str, subtitulo: str,
                           color: tuple[str, str], group: str):
     y_min = df[y[0]].min()
     y_max = df[y[0]].max()
-    
     grafico_lineas = (
         ggplot(
             df,
@@ -44,7 +43,6 @@ def crearGraficoDeLineas(df, ruta: str, titulo: str, subtitulo: str,
             panel_grid_minor_y=element_text(color="#F5F5F5")
         )
     )
-
     print(grafico_lineas)
     grafico_lineas.save(f"graficos/{ruta}.png", dpi=150)
 

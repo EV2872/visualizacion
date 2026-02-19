@@ -33,7 +33,6 @@ def grafico_lineas_gran_canaria(renta_provincias: pd.DataFrame) -> None:
     df = renta_provincias[
         renta_provincias["TERRITORIO_CODE"] == "ES701"
     ]
-
     crearGraficoDeLineas(
         df,
         ruta="evolucion_renta_gran_canaria",

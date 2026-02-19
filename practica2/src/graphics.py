@@ -98,9 +98,9 @@ def crearMapaDeCalor(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str,
         )
         + geom_tile(color="white", size=0.5)
         + scale_fill_gradient2(
-            low="#2166ac",      # Azul para valores bajos
-            mid="#f7f7f7",      # Gris claro para valores medios
-            high="#b2182b",     # Rojo para valores altos
+            low="#2166ac",
+            mid="#f7f7f7",
+            high="#b2182b",
             midpoint=df[fill[0]].median()
         )
         + labs(
@@ -117,7 +117,7 @@ def crearMapaDeCalor(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str,
             axis_text_x=element_text(rotation=45, hjust=1),
             axis_text_y=element_text(size=9),
             legend_position="right",
-            panel_grid_major=element_line(color="none"),  # Sin grid
+            panel_grid_major=element_line(color="none"),
             panel_grid_minor=element_line(color="none")
         )
     )
@@ -149,7 +149,7 @@ def crearGraficoBarrasNivelEstudiosMujeres(df: pd.DataFrame, ruta: str, titulo: 
             x='Año',
             y='Frecuencia (Total mujeres)',
             fill='Nivel de estudios',
-            caption='Fuente: INE'
+            caption='Fuente: ISTAC'
         )
         + theme_minimal()
         + theme(
