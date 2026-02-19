@@ -46,7 +46,7 @@ def crearGraficoDeLineas(df, ruta: str, titulo: str, subtitulo: str,
     )
 
     print(grafico_lineas)
-    grafico_lineas.save(f"graficos/{ruta}.png", dpi=150)
+    grafico_lineas.save(f"../graficos/{ruta}.png", dpi=150)
 
 
 def crearGraficoDeAreas(df, ruta: str, titulo: str, subtitulo: str,
@@ -79,10 +79,10 @@ def crearGraficoDeAreas(df, ruta: str, titulo: str, subtitulo: str,
     )
 
     print(grafico_area)
-    grafico_area.save(f"graficos/{ruta}.png", dpi=150)
+    grafico_area.save(f"../graficos/{ruta}.png", dpi=150)
 
 # Cargamos los datos
-df = pd.read_csv("data/distribucion-renta-canarias.csv", sep=",", encoding="utf-8")
+df = pd.read_csv("../data/distribucion-renta-canarias.csv", sep=",", encoding="utf-8")
 print("Columnas:", df.columns.tolist())
 print(df.head())
 
