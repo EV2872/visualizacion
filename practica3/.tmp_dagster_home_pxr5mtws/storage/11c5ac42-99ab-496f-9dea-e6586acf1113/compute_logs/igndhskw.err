@@ -1,0 +1,7 @@
+[32m2026-02-19 15:26:05 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - 15849 - LOGS_CAPTURED - Started capturing logs in process (pid: 15849).
+[32m2026-02-19 15:26:05 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - 15849 - nivel_estudios_df - STEP_START - Started execution of step "nivel_estudios_df".
+[32m2026-02-19 15:26:07 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - 15849 - nivel_estudios_df - STEP_OUTPUT - Yielded output "result" of type "DataFrame". (Type check passed).
+[32m2026-02-19 15:26:07 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - nivel_estudios_df - Writing file at: /home/evian/Escritorio/master/visualizacion/practica2/.tmp_dagster_home_pxr5mtws/storage/nivel_estudios_df using PickledObjectFilesystemIOManager...
+[32m2026-02-19 15:26:07 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - 15849 - nivel_estudios_df - ASSET_MATERIALIZATION - Materialized value nivel_estudios_df.
+[32m2026-02-19 15:26:07 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - 15849 - nivel_estudios_df - HANDLED_OUTPUT - Handled output "result" using IO manager "io_manager"
+[32m2026-02-19 15:26:07 +0000[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 11c5ac42-99ab-496f-9dea-e6586acf1113 - 15849 - nivel_estudios_df - STEP_SUCCESS - Finished execution of step "nivel_estudios_df" in 1.58s.
