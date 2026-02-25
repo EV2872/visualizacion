@@ -51,7 +51,7 @@ def crearGraficoDeLineas(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: st
     )
 
     grafico_lineas.save(GRAFICOS_DIR / f"{ruta}.png", dpi=150)
-
+    return grafico_lineas
 
 def crearGraficoDeAreas(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str,
                         x: tuple[str, str], y: tuple[str, str], 
@@ -83,6 +83,7 @@ def crearGraficoDeAreas(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str
     )
 
     grafico_area.save(GRAFICOS_DIR / f"{ruta}.png", dpi=150)
+    return grafico_area
 
 def crearMapaDeCalor(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str,
                      x: tuple[str, str], y: tuple[str, str], 
@@ -122,6 +123,7 @@ def crearMapaDeCalor(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str,
         )
     )
     grafico_heatmap.save(GRAFICOS_DIR / f"{ruta}.png", dpi=150)
+    return grafico_heatmap
 
 def crearGraficoBarrasNivelEstudiosMujeres(df: pd.DataFrame, ruta: str, titulo: str, subtitulo: str):
     # Filtrar solo mujeres
@@ -132,6 +134,21 @@ def crearGraficoBarrasNivelEstudiosMujeres(df: pd.DataFrame, ruta: str, titulo: 
     df_agrupado = df_mujeres.groupby(['Año', 'Nivel de estudios en curso'])['Total'].sum().reset_index()
     # Filtrar solo registros con datos
     df_agrupado = df_agrupado[df_agrupado['Total'] > 0]
+
+    # Ordenamos
+    orden = (
+        df_agrupado.groupby('Nivel de estudios en curso')['Total']
+        .sum()
+        .sort_values(ascending=False)
+        .index.tolist()
+    )
+    df_agrupado['Nivel de estudios en curso'] = pd.Categorical(
+        df_agrupado['Nivel de estudios en curso'],
+        categories=orden,
+        ordered=True
+    )
+    df_agrupado = df_agrupado.sort_values('Nivel de estudios en curso')
+
     grafico = (
         ggplot(
             df_agrupado,
@@ -160,3 +177,4 @@ def crearGraficoBarrasNivelEstudiosMujeres(df: pd.DataFrame, ruta: str, titulo: 
         )
     )
     grafico.save(GRAFICOS_DIR / f"{ruta}.png", dpi=150)
+    return grafico

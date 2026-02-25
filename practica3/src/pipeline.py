@@ -1,11 +1,18 @@
 import pandas as pd
-from dagster import asset
+from dagster import asset, Output, Definitions, load_assets_from_current_module, load_asset_checks_from_current_module
 from src.data_loading import *
 from src.graphics import *
 
+@asset_check(asset=renta_canarias)
+def check_datos_para_graficos_canarias(df: pd.DataFrame) -> AssetCheckResult:
+    return AssetCheckResult(
+        passed=len(df) > 0,
+        metadata={"num_filas": len(df)}
+    )
+
 @asset(deps=[renta_canarias])
-def grafico_lineas_canarias(renta_canarias: pd.DataFrame) -> None:
-    crearGraficoDeLineas(
+def grafico_lineas_canarias(renta_canarias: pd.DataFrame) -> ggplot:
+    return crearGraficoDeLineas(
         renta_canarias,
         ruta="evolucion_renta_canarias",
         titulo="Evolución de la composición de la renta en Canarias",
@@ -14,6 +21,20 @@ def grafico_lineas_canarias(renta_canarias: pd.DataFrame) -> None:
         y=("porcentaje", "Porcentaje (%)"),
         color=("medida", "Tipo de ingreso"),
         group="medida"
+    )
+
+@asset_check(asset=grafico_lineas_canarias)
+def check_eje_y_desde_cero(grafico) -> AssetCheckResult:
+    y_scale = grafico.scales.get_scales('y')
+    y_min = y_scale.limits[0] if y_scale and y_scale.limits else None
+
+    passed = y_min is not None and y_min >= 0
+    return AssetCheckResult(
+        passed=passed,
+        metadata={
+            "valor_inicio_eje_y": float(y_min) if y_min is not None else "no definido",
+            "error_perceptivo": "Nulo" if passed else "Alto"
+        }
     )
 
 @asset(deps=[renta_canarias])
@@ -93,6 +114,16 @@ def grafico_areas_tenerife(renta_provincias: pd.DataFrame) -> None:
         fill=('medida', 'Tipo de ingreso')
     )
 
+@asset_check(asset=renta_municipios_enriquecida)
+def check_datos_gomera(df: pd.DataFrame) -> AssetCheckResult:
+    df_gomera = df[df["isla_code"].astype(str) == "381"]
+    municipios = df_gomera["nombre_municipio"].nunique()
+
+    return AssetCheckResult(
+        passed=municipios > 1,
+        metadata={"municipios_distintos": municipios}
+    )
+
 # Mapa de calor sobre año y municipios donde cada cuadrado representa
 # como varía en el tiempo el porcentaje de Sueldos y salarios en La Gomera
 @asset(deps=[renta_municipios_enriquecida])
@@ -112,10 +143,33 @@ def grafico_heatmap_municipios_gomera(renta_municipios_enriquecida: pd.DataFrame
     )
 
 @asset(deps=[nivel_estudios_df])
-def grafico_nivel_estudios_mujeres(nivel_estudios_df: pd.DataFrame) -> None:
-    crearGraficoBarrasNivelEstudiosMujeres(
+def grafico_nivel_estudios_mujeres(nivel_estudios_df: pd.DataFrame) -> ggplot:
+    return crearGraficoBarrasNivelEstudiosMujeres(
         nivel_estudios_df,
         ruta="barras_nivel_estudios_mujeres",
         titulo="Nivel de estudios en mujeres en Canarias",
         subtitulo="Evolución por año"
     )
+
+@asset_check(asset=grafico_nivel_estudios_mujeres)
+def check_orden_magnitud_barras(grafico) -> AssetCheckResult:
+    data = grafico.data
+    valores = (
+        data.groupby("Nivel de estudios en curso")["Total"]
+        .sum()
+        .tolist()
+    )
+    sorted_vals = sorted(valores, reverse=True)
+    return AssetCheckResult(
+        passed=valores == sorted_vals,
+        metadata={
+            "orden_detectado": [int(v) for v in valores],
+            "orden_esperado": [int(v) for v in sorted_vals],
+            "is_sorted": bool(valores == sorted_vals)
+        }
+    )
+
+defs = Definitions(
+    assets=load_assets_from_current_module(),
+    asset_checks=load_asset_checks_from_current_module()
+)
