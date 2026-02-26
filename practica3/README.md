@@ -7,7 +7,7 @@ La carpeta se divide en:
 - test: guarda un test de prueba para saber que las dependencias se instalaron correctamente
 
 ## Ejecuciones
-Suponemos que ejecutamos los siguientes comandos desde visualizacion/practica2/
+Suponemos que ejecutamos los siguientes comandos desde visualizacion/practica3/
 
 ### Test
 ```console
