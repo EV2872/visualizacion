@@ -33,7 +33,6 @@ def check_columnas_renta_canarias(df: pd.DataFrame) -> AssetCheckResult:
         "medida"
     }
     faltantes = columnas_esperadas - set(df.columns)
-
     return AssetCheckResult(
         passed=len(faltantes) == 0,
         metadata={"columnas_faltantes": list(faltantes)}
@@ -45,7 +44,6 @@ def check_tipos_renta_canarias(df: pd.DataFrame) -> AssetCheckResult:
         pd.api.types.is_integer_dtype(df["anio"]) and
         pd.api.types.is_numeric_dtype(df["porcentaje"])
     )
-
     return AssetCheckResult(passed=passed)
 
 @asset
@@ -77,7 +75,6 @@ def renta_canarias(renta_canarias_df: pd.DataFrame) -> pd.DataFrame:
 @asset_check(asset=renta_canarias)
 def check_sin_nulos_renta_canarias(df: pd.DataFrame) -> AssetCheckResult:
     nulos = df[["anio", "porcentaje", "medida"]].isna().sum().to_dict()
-
     return AssetCheckResult(
         passed=all(v == 0 for v in nulos.values()),
         metadata=nulos
@@ -88,7 +85,6 @@ def check_porcentajes_validos(df: pd.DataFrame) -> AssetCheckResult:
     fuera_rango = df[
         (df["porcentaje"] < 0) | (df["porcentaje"] > 100)
     ]
-
     return AssetCheckResult(
         passed=fuera_rango.empty,
         metadata={"filas_fuera_rango": len(fuera_rango)}
@@ -127,7 +123,6 @@ def renta_municipios_enriquecida(
 @asset_check(asset=renta_municipios_enriquecida)
 def check_merge_municipios(df: pd.DataFrame) -> AssetCheckResult:
     sin_nombre = int(df["nombre_municipio"].isna().sum())
-
     return AssetCheckResult(
         passed=sin_nombre == 0,
         metadata={"municipios_sin_nombre": sin_nombre}
@@ -139,3 +134,13 @@ def nivel_estudios_df() -> pd.DataFrame:
     df.columns = df.columns.str.strip()
     df['Periodo'] = pd.to_datetime(df['Periodo'])
     return df
+
+'''
+@asset_check(asset=nivel_estudios_df)
+def niveles_estudios_df_contiene_edad(df: pd.DataFrame):
+    con_edad = ('Edad' in df.columns)
+    return AssetCheckResult(
+        passed=con_edad,
+        metadata={"contiene_columna_edad": con_edad}
+    )
+'''

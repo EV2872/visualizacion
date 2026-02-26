@@ -27,7 +27,6 @@ def grafico_lineas_canarias(renta_canarias: pd.DataFrame) -> ggplot:
 def check_eje_y_desde_cero(grafico) -> AssetCheckResult:
     y_scale = grafico.scales.get_scales('y')
     y_min = y_scale.limits[0] if y_scale and y_scale.limits else None
-
     passed = y_min is not None and y_min >= 0
     return AssetCheckResult(
         passed=passed,
@@ -118,7 +117,6 @@ def grafico_areas_tenerife(renta_provincias: pd.DataFrame) -> None:
 def check_datos_gomera(df: pd.DataFrame) -> AssetCheckResult:
     df_gomera = df[df["isla_code"].astype(str) == "381"]
     municipios = df_gomera["nombre_municipio"].nunique()
-
     return AssetCheckResult(
         passed=municipios > 1,
         metadata={"municipios_distintos": municipios}
