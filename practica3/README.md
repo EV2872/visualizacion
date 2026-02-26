@@ -14,6 +14,11 @@ Suponemos que ejecutamos los siguientes comandos desde visualizacion/practica2/
 dagster dev -f test/test-assets.py
 ```
 
+### Test Checks
+```console
+dagster dev -f src/definitions.py -d src
+```
+
 ### Prototipo
 ```console
 python src/lab-renta.py
