@@ -2,6 +2,7 @@ import pandas as pd
 from dagster import asset, Output, Definitions, load_assets_from_current_module, load_asset_checks_from_current_module
 from src.data_loading import *
 from src.graphics import *
+from src.graphics_generator import *
 
 @asset_check(asset=renta_canarias)
 def check_datos_para_graficos_canarias(df: pd.DataFrame) -> AssetCheckResult:
@@ -167,6 +168,125 @@ def check_orden_magnitud_barras(grafico) -> AssetCheckResult:
         }
     )
 
+
+# ── GRÁFICOS GENERADOS POR IA ──────────────────────────────────
+@asset
+def islas_raw() -> pd.DataFrame:
+    return pd.read_csv("./data/pwbi-1.csv")
+
+@asset
+def template_ia_islas(islas_raw):
+    return generic_template_ia(
+        df=islas_raw,
+        descripcion=(
+            "Gráfico de líneas de la evolución del gasto por isla. "
+            "IMPORTANTE: NO uses coord_flip(). "
+            "Resalta Tenerife con color destacado y el resto en gris (#D3D3D3) "
+            "usando scale_color_manual."
+        )
+    )
+
+@asset
+def codigo_generado_ia_islas(context, template_ia_islas):
+    return llamar_ia_y_limpiar(context, template_ia_islas)
+
+@asset
+def visualizacion_islas(context, codigo_generado_ia_islas, islas_raw):
+    return ejecutar_y_guardar(context, codigo_generado_ia_islas, islas_raw, "visualizacion_ia_islas.png")
+
+
+@asset
+def template_ia_canarias(renta_canarias):
+    return generic_template_ia(
+        df=renta_canarias,
+        descripcion=(
+            "Gráfico de líneas con puntos de la evolución de la renta en Canarias "
+            "por tipo de ingreso. "
+            "REGLAS ESTRICTAS: "
+            "1. NO uses coord_flip(). "
+            "2. El theme() SIEMPRE va dentro del paréntesis de ggplot con +, NUNCA solo. "
+            "3. element_text() solo se usa DENTRO de theme(), jamás como capa separada. "
+            "4. La estructura debe ser: ggplot(...) + geom_line() + labs() + theme_minimal() + theme(...). "
+            "5. Usa scale_color_brewer() para los colores. "
+            "6. Rota el eje X con: theme(axis_text_x=element_text(rotation=45)). "
+        )
+    )
+
+@asset
+def codigo_generado_ia_canarias(context, template_ia_canarias):
+    return llamar_ia_y_limpiar(context, template_ia_canarias)
+
+@asset
+def visualizacion_canarias(context, codigo_generado_ia_canarias, renta_canarias):
+    return ejecutar_y_guardar(context, codigo_generado_ia_canarias, renta_canarias, "visualizacion_ia_canarias.png")
+
+
+# ── PROVINCIAS (IA) ────────────────────────────────────────────
+@asset
+def template_ia_provincias(renta_provincias):
+    return generic_template_ia(
+        df=renta_provincias,
+        descripcion=(
+            "Gráfico de áreas apiladas que muestra la evolución de la composición "
+            "de la renta por tipo de ingreso, separando las dos provincias canarias. "
+            "REGLAS ESTRICTAS: "
+            "1. NO uses coord_flip(). "
+            "2. Usa facet_wrap con la columna 'municipio' para separar provincias. "
+            "3. Mapea 'anio' al eje X, 'porcentaje' al eje Y, 'medida' al fill. "
+            "4. Usa geom_area(alpha=0.85, position='stack'). "
+            "5. Estructura: ggplot(...) + geom_area(...) + labs(...) + theme_minimal() + theme(...). "
+            "6. theme(axis_text_x=element_text(rotation=45)) para rotar eje X. "
+            "7. Usa scale_fill_brewer(type='qual', palette='Set2') para los colores. "
+        )
+    )
+
+@asset
+def codigo_generado_ia_provincias(context, template_ia_provincias):
+    return llamar_ia_y_limpiar(context, template_ia_provincias)
+
+@asset
+def visualizacion_provincias(context, codigo_generado_ia_provincias, renta_provincias):
+    return ejecutar_y_guardar(
+        context,
+        codigo_generado_ia_provincias,
+        renta_provincias,
+        "visualizacion_ia_provincias.png"
+    )
+
+
+# ── NIVEL ESTUDIOS (IA) ────────────────────────────────────────
+@asset
+def template_ia_estudios(nivel_estudios_df):
+    return generic_template_ia(
+        df=nivel_estudios_df,
+        descripcion=(
+            "Gráfico de barras agrupadas que muestra la evolución del nivel de estudios "
+            "en Canarias por año, diferenciando por sexo. "
+            "REGLAS ESTRICTAS: "
+            "1. NO uses coord_flip(). "
+            "2. Extrae el año de la columna 'Periodo' con: df['Año'] = df['Periodo'].dt.year. "
+            "3. Mapea 'factor(Año)' al eje X, 'Total' al eje Y, 'Sexo' al fill. "
+            "4. Usa geom_col(position='dodge', alpha=0.85). "
+            "5. Estructura: ggplot(...) + geom_col(...) + labs(...) + theme_minimal() + theme(...). "
+            "6. theme(axis_text_x=element_text(rotation=45)) para rotar eje X. "
+            "7. Usa scale_fill_brewer(type='qual', palette='Set1') para los colores. "
+        )
+    )
+
+@asset
+def codigo_generado_ia_estudios(context, template_ia_estudios):
+    return llamar_ia_y_limpiar(context, template_ia_estudios)
+
+@asset
+def visualizacion_estudios(context, codigo_generado_ia_estudios, nivel_estudios_df):
+    return ejecutar_y_guardar(
+        context,
+        codigo_generado_ia_estudios,
+        nivel_estudios_df,
+        "visualizacion_ia_estudios.png"
+    )
+
+# Cargamos todos los assets y checks
 defs = Definitions(
     assets=load_assets_from_current_module(),
     asset_checks=load_asset_checks_from_current_module()
