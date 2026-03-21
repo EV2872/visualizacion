@@ -4,8 +4,9 @@ from plotnine import (
     geom_area, geom_tile, ggplot, aes, geom_col,
     labs, scale_fill_brewer, scale_fill_gradient2, 
     scale_y_continuous, theme_minimal, theme,
-    element_text, geom_line, geom_point, element_line
+    element_text, geom_line, geom_point, element_line, geom_map, coord_fixed
 )
+import geopandas as gpd
 
 PROJECT_ROOT = Path(__file__).parent.parent
 GRAFICOS_DIR = PROJECT_ROOT / "graficos"
@@ -174,6 +175,35 @@ def crearGraficoBarrasNivelEstudiosMujeres(df: pd.DataFrame, ruta: str, titulo: 
             axis_text_x=element_text(rotation=45, hjust=1),
             legend_position='right',
             legend_text=element_text(size=8)
+        )
+    )
+    grafico.save(GRAFICOS_DIR / f"{ruta}.png", dpi=150)
+    return grafico
+
+def crearMapaMunicipios(geojson_path: str, ruta: str, titulo: str,
+                         columna_valor: str, etiqueta_valor: str):
+    gdf = gpd.read_file(geojson_path)
+    gdf[columna_valor] = pd.to_numeric(gdf[columna_valor], errors='coerce')
+
+    grafico = (
+        ggplot(gdf)
+        + geom_map(aes(fill=columna_valor), color="white", size=0.2)
+        + scale_fill_gradient2(
+            low="#2166ac",
+            mid="#f7f7f7",
+            high="#b2182b",
+            midpoint=gdf[columna_valor].median()
+        )
+        + coord_fixed()
+        + labs(
+            title=titulo,
+            fill=etiqueta_valor,
+            caption="Fuente: ISTAC"
+        )
+        + theme_minimal()
+        + theme(
+            figure_size=(14, 10),
+            axis_text=element_text(size=7)
         )
     )
     grafico.save(GRAFICOS_DIR / f"{ruta}.png", dpi=150)

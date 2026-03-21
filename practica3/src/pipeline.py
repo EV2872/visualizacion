@@ -1,5 +1,10 @@
+import os
+
 import pandas as pd
-from dagster import asset, Output, Definitions, load_assets_from_current_module, load_asset_checks_from_current_module
+from dagster import (
+    sensor, RunRequest, define_asset_job, AssetSelection, SensorEvaluationContext, 
+    asset, Output, Definitions, load_assets_from_current_module, load_asset_checks_from_current_module
+)
 from src.data_loading import *
 from src.graphics import *
 from src.graphics_generator import *
@@ -169,6 +174,16 @@ def check_orden_magnitud_barras(grafico) -> AssetCheckResult:
     )
 
 
+@asset
+def mapa_municipios_canarias() -> None:
+    crearMapaMunicipios(
+        geojson_path="data/Municipios-2024.json",
+        ruta="mapa_paro_municipios",
+        titulo="Tasa de paro por municipio en Canarias (2024)",
+        columna_valor="tpar_t",
+        etiqueta_valor="Tasa de paro (%)"
+    )
+
 # ── GRÁFICOS GENERADOS POR IA ──────────────────────────────────
 @asset
 def islas_raw() -> pd.DataFrame:
@@ -294,8 +309,36 @@ def visualizacion_estudios(context, codigo_generado_ia_estudios, nivel_estudios_
         "visualizacion_ia_estudios.png"
     )
 
+# JOB: todos los assets
+pipeline_job = define_asset_job(
+    name="pipeline_completo",
+    selection=AssetSelection.all()
+)
+
+# vigila cambios en la carpeta data/
+@sensor(job=pipeline_job, minimum_interval_seconds=30)
+def sensor_cambios_data(context: SensorEvaluationContext):
+    data_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data")
+    )
+    # Calcular el mtime más reciente de todos los ficheros en data/
+    mtimes = []
+    for fichero in os.listdir(data_dir):
+        ruta = os.path.join(data_dir, fichero)
+        if os.path.isfile(ruta):
+            mtimes.append(os.path.getmtime(ruta))
+    if not mtimes:
+        return
+    ultimo_cambio = str(max(mtimes))
+    ultimo_conocido = context.cursor or "0"
+    if ultimo_cambio != ultimo_conocido:
+        context.update_cursor(ultimo_cambio)
+        yield RunRequest(run_key=ultimo_cambio)
+
 # Cargamos todos los assets y checks
 defs = Definitions(
     assets=load_assets_from_current_module(),
-    asset_checks=load_asset_checks_from_current_module()
+    asset_checks=load_asset_checks_from_current_module(),
+    jobs=[pipeline_job],
+    sensors=[sensor_cambios_data]
 )
