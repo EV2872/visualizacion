@@ -59,7 +59,7 @@ def llamar_ia_y_limpiar(context, template: dict) -> str:
 
     return codigo_final.strip()
 
-
+'''
 def ejecutar_y_guardar(context, codigo: str, df: pd.DataFrame, ruta: str):
     import plotnine
     
@@ -78,6 +78,36 @@ def ejecutar_y_guardar(context, codigo: str, df: pd.DataFrame, ruta: str):
         subprocess.run(["git", "commit", "-m", f"Gráfico actualizado: {ruta}"])
         subprocess.run(["git", "push"])
         return Output(value=ruta, metadata={"ruta": ruta})
+    except Exception as e:
+        context.log.error(f"Error al renderizar: {e}")
+        raise
+'''
+
+def ejecutar_y_guardar(context, codigo: str, df: pd.DataFrame, ruta: str):
+    import plotnine, os
+
+    context.log.info(f"Código generado por la IA:\n{codigo}")
+
+    raiz_repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+    docs_dir = os.path.join(raiz_repo, "docs")
+    os.makedirs(docs_dir, exist_ok=True)  # crea docs/ si no existe
+    ruta_completa = os.path.join(docs_dir, ruta)
+
+    context.log.info(f"Raíz repo detectada: {raiz_repo}")
+    context.log.info(f"Guardando en: {ruta_completa}")
+
+    entorno = globals().copy()
+    entorno['plotnine'] = plotnine
+    entorno.update({k: v for k, v in plotnine.__dict__.items() if not k.startswith('_')})
+    entorno['pd'] = pd
+    try:
+        exec(codigo, entorno)
+        grafico = entorno['generar_plot'](df)
+        grafico.save(ruta_completa, width=10, height=6, dpi=100)
+        subprocess.run(["git", "add", ruta_completa], cwd=raiz_repo)
+        subprocess.run(["git", "commit", "-m", f"Gráfico actualizado: {ruta}"], cwd=raiz_repo)
+        subprocess.run(["git", "push"], cwd=raiz_repo)
+        return Output(value=str(ruta_completa), metadata={"ruta": str(ruta_completa)})
     except Exception as e:
         context.log.error(f"Error al renderizar: {e}")
         raise
