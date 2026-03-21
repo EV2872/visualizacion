@@ -206,9 +206,13 @@ def template_ia_canarias(renta_canarias):
             "1. NO uses coord_flip(). "
             "2. El theme() SIEMPRE va dentro del paréntesis de ggplot con +, NUNCA solo. "
             "3. element_text() solo se usa DENTRO de theme(), jamás como capa separada. "
-            "4. La estructura debe ser: ggplot(...) + geom_line() + labs() + theme_minimal() + theme(...). "
-            "5. Usa scale_color_brewer() para los colores. "
+            "4. La estructura debe ser: ggplot(...) + geom_line() + geom_point() + labs() + theme_minimal() + theme(...). "
+            "5. La columna 'anio' es NUMÉRICA (continua), por tanto: "
+            "   - Mapéala directamente al eje X: aes(x='anio', ...). "
+            "   - NO uses factor() ni as_factor() sobre 'anio'. "
+            "   - Para el color usa scale_color_discrete() o scale_color_manual(), NUNCA scale_color_brewer(). "
             "6. Rota el eje X con: theme(axis_text_x=element_text(rotation=45)). "
+            "7. Agrupa por 'medida': aes(color='medida', group='medida'). "
         )
     )
 
@@ -264,12 +268,16 @@ def template_ia_estudios(nivel_estudios_df):
             "en Canarias por año, diferenciando por sexo. "
             "REGLAS ESTRICTAS: "
             "1. NO uses coord_flip(). "
-            "2. Extrae el año de la columna 'Periodo' con: df['Año'] = df['Periodo'].dt.year. "
-            "3. Mapea 'factor(Año)' al eje X, 'Total' al eje Y, 'Sexo' al fill. "
-            "4. Usa geom_col(position='dodge', alpha=0.85). "
-            "5. Estructura: ggplot(...) + geom_col(...) + labs(...) + theme_minimal() + theme(...). "
-            "6. theme(axis_text_x=element_text(rotation=45)) para rotar eje X. "
-            "7. Usa scale_fill_brewer(type='qual', palette='Set1') para los colores. "
+            "2. La columna 'Periodo' NO es datetime, conviértela primero así: "
+            "   df['Año'] = pd.to_datetime(df['Periodo']).dt.year "
+            "3. Filtra solo filas con Total > 0: df = df[df['Total'] > 0]. "
+            "4. Mapea 'factor(Año)' al eje X, 'Total' al eje Y, 'Sexo' al fill. "
+            "5. Usa geom_col(position='dodge', alpha=0.85). "
+            "6. Estructura: ggplot(...) + geom_col(...) + labs(...) + theme_minimal() + theme(...). "
+            "7. theme(axis_text_x=element_text(rotation=45)) para rotar eje X. "
+            "8. Usa scale_fill_brewer(type='qual', palette='Set1') para los colores. "
+            "9. El código de transformación (líneas 2 y 3) va FUERA de ggplot(), "
+            "   antes de construir el gráfico, dentro de generar_plot(df). "
         )
     )
 
