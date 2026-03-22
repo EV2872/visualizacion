@@ -1,5 +1,6 @@
 dagster 
 dagster-webserver
 pandas
+geopandas 
 plotnine
 openpyxl

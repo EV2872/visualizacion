@@ -69,7 +69,6 @@ def generar_plot(df):
     """
 
     user_content = f"Basándote en esta descripción, completa el template:\n{descripcion_grafico}"
-
     return {
         "model": "ollama/llama3.1:8b",
         "messages": [
