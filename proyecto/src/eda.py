@@ -1,7 +1,5 @@
 from dagster import AssetIn, AssetsDefinition, asset
-from typing import Callable
 import pandas as pd
-from common_data import DATASET
 
 def exploratory_analysis(df: pd.DataFrame, name: str) -> None:
     print(f'============== Exploratory analysis of dataset: {name} ==============')
