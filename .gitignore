@@ -1,9 +1,17 @@
 visualizacionVEM/
+
 practica2/__pycache__
 practica2/src/__pycache__
 practica2/test/__pycache__
 practica2/.tmp_dagster_home_*
+
 practica3/__pycache__
 practica3/src/__pycache__
 practica3/test/__pycache__
 practica3/.tmp_dagster_home_*
+
+proyecto/data
+proyecto/__pycache__
+proyecto/src/__pycache__
+proyecto/test/__pycache__
+proyecto/.tmp_dagster_home_*
