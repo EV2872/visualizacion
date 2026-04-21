@@ -9,8 +9,8 @@ def exploratory_analysis(df: pd.DataFrame, name: str) -> None:
     print(df.dtypes)
     for column in df.columns:
         print(f"Unique values in '{column}': {df[column].unique()}")   
-    print('Valores nulos')
-    print(df.isnull())
+    print('Valores nulos: ')
+    print(df.isnull().sum())
 
 def make_eda_asset(asset_name: str, dataset_name: str) -> AssetsDefinition:
     @asset(name=asset_name, ins={"df": AssetIn(dataset_name)})

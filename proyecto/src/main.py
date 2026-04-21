@@ -7,10 +7,11 @@ from dagster import (
 )
 
 from common_data import *
-exploratory_analysis(load_dataset(DIR.DATA / DATASET.ACTIVIDAD_SC,                  FORMAT.CSV), DATASET.ACTIVIDAD_SC)
-exploratory_analysis(load_dataset(DIR.DATA / DATASET.DISTRIBUCIÓN_RENTA_INGRESOS,   FORMAT.CSV), DATASET.DISTRIBUCIÓN_RENTA_INGRESOS)
-exploratory_analysis(load_dataset(DIR.DATA / DATASET.OCUPACION_SC,                  FORMAT.CSV), DATASET.OCUPACION_SC)
-exploratory_analysis(load_dataset(DIR.DATA / DATASET.RENTA_MEDIA_SC,                FORMAT.CSV), DATASET.RENTA_MEDIA_SC)
+from preprocessing import *
+exploratory_analysis(actividad_sc_clean(load_dataset(DIR.DATA / DATASET.ACTIVIDAD_SC,                  FORMAT.CSV)), DATASET.ACTIVIDAD_SC)
+exploratory_analysis(distribucion_renta_clean(load_dataset(DIR.DATA / DATASET.DISTRIBUCIÓN_RENTA_INGRESOS,   FORMAT.CSV)), DATASET.DISTRIBUCIÓN_RENTA_INGRESOS)
+exploratory_analysis(ocupacion_sc_clean(load_dataset(DIR.DATA / DATASET.OCUPACION_SC,                  FORMAT.CSV)), DATASET.OCUPACION_SC)
+exploratory_analysis(renta_media_clean(load_dataset(DIR.DATA / DATASET.RENTA_MEDIA_SC,                FORMAT.CSV)), DATASET.RENTA_MEDIA_SC)
 
 # JOB: todos los assets
 pipeline_job = define_asset_job(
