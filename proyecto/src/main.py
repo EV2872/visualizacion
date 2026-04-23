@@ -1,4 +1,4 @@
-from loaders import load_assets, load_dataset
+from loaders import load_assets, load_checks, load_dataset
 from eda import eda_assets, exploratory_analysis
 from preprocessing import preprocess_assets, preprocess_checks
 from dagster import (
@@ -22,7 +22,7 @@ pipeline_job = define_asset_job(
 # Cargamos todos los assets y checks
 defs = Definitions(
     assets=[*load_assets, *eda_assets, *preprocess_assets],
-    asset_checks=[*preprocess_checks],
+    asset_checks=[*load_checks, *preprocess_checks],
     jobs=[pipeline_job],
     #sensors=[sensor_cambios_data]
 )
