@@ -6,7 +6,7 @@ class DIR:
     PROJECT_ROOT: Path = Path(__file__).parent.parent  # proyecto
     DATA: Path = Path(PROJECT_ROOT / 'data/')
     DATA_CATOGRAFIA: Path = Path(DATA / 'cartografia-secciones/')
-    GRAPHS: Path = Path(PROJECT_ROOT / 'graficos/')
+    GRAPHS: Path = Path(PROJECT_ROOT / 'graficos2/')
 
 @dataclass(frozen=True)
 class FORMAT:
@@ -49,7 +49,7 @@ MUNICIPIO_ISLA = {
     'La Orotava': 'Tenerife',
     'Los Realejos': 'Tenerife',
     'Los Silos': 'Tenerife',
-    'Puerto de la Cruz': 'Tenerife',
+    'Puerto de La Cruz': 'Tenerife',
     'San Cristóbal de La Laguna': 'Tenerife',
     'San Juan de la Rambla': 'Tenerife',
     'San Miguel de Abona': 'Tenerife',
@@ -80,6 +80,7 @@ MUNICIPIO_ISLA = {
     'Tijarafe': 'La Palma',
     'Villa de Mazo': 'La Palma',
     'Tazacorte': 'La Palma',
+    'Valleseco': 'Gran Canaria',
 
     # =======================
     # LA GOMERA

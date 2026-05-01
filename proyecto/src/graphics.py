@@ -1,29 +1,33 @@
 from dagster import asset
 import pandas as pd
 import geopandas as gpd
+from plotnine import ggplot
 from common_data import DIR, MUNICIPIO_ISLA
 from graphics_templates import (
-    bars_graphic, boxplot_graphic, choropleth_map_graphic, 
-    heatmap_graphic, lines_graphic, 
+    bars_graphic, boxplot_graphic, choropleth_map_graphic,
+    heatmap_graphic, lines_graphic,
     save_graphic, save_grid_graphic, scatter_graphic, stacked_bars_graphic
 )
 
 # ── actividad_sc_clean ────────────────────────────────────────────────────────
 
 @asset
-def grafico_evolucion_actividad(actividad_sc_clean: pd.DataFrame) -> dict:
-    df = actividad_sc_clean.copy()
-    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
-    # Gráfico total de todas las islas agrupadas
-    df_total = df.groupby(["año", "actividad"])["num_casos"].sum().reset_index()
-    g_total = lines_graphic(
-        df=df_total,
+def grafico_evolucion_actividad_total(actividad_sc_clean: pd.DataFrame) -> ggplot:
+    df = actividad_sc_clean.groupby(["año", "actividad"])["num_casos"].sum().reset_index()
+    g = lines_graphic(
+        df=df,
         x="año", y="num_casos", color="actividad",
         titulo="Evolución de la actividad económica — Provincia de Santa Cruz de Tenerife",
         subtitulo="2021-2023 por sector",
         xlabel="Año", ylabel="Número de casos"
     )
-    save_graphic(g_total, DIR.GRAPHS / 'actividad_sc', "evolucion_actividad_total")
+    save_graphic(g, DIR.GRAPHS / 'actividad_sc', "evolucion_actividad_total")
+    return g
+
+@asset
+def grafico_evolucion_actividad_grid(actividad_sc_clean: pd.DataFrame) -> None:
+    df = actividad_sc_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     graficos_islas = []
     for isla in sorted(df["isla"].unique()):
         df_isla = (
@@ -39,8 +43,6 @@ def grafico_evolucion_actividad(actividad_sc_clean: pd.DataFrame) -> dict:
             subtitulo="2021-2023 por sector",
             xlabel="Año", ylabel="Número de casos"
         )
-        nombre = isla.lower().replace(" ", "_")
-        #save_graphic(g_isla, DIR.GRAPHS / 'actividad_sc', f"evolucion_actividad_{nombre}")
         graficos_islas.append((isla, g_isla))
     save_grid_graphic(
         graficos=graficos_islas,
@@ -48,13 +50,25 @@ def grafico_evolucion_actividad(actividad_sc_clean: pd.DataFrame) -> dict:
         name="evolucion_actividad_grid",
         cols=2
     )
-    return {
-        'islas_total' : g_total,
-        'grid' : graficos_islas
-    }
 
 @asset
-def grafico_actividad_por_municipio(actividad_sc_clean: pd.DataFrame) -> dict:
+def grafico_actividad_por_isla(actividad_sc_clean: pd.DataFrame) -> ggplot:
+    df = actividad_sc_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df_islas = df.groupby(["isla", "actividad"])["num_casos"].sum().reset_index()
+    g = stacked_bars_graphic(
+        df=df_islas,
+        x="isla", y="num_casos", fill="actividad",
+        titulo="Actividad económica por isla",
+        subtitulo="Provincia de Santa Cruz de Tenerife — Total 2021-2023",
+        xlabel="Isla", ylabel="Número de casos",
+        position="fill",
+    )
+    save_graphic(g, DIR.GRAPHS / 'actividad_sc', "actividad_por_isla")
+    return g
+
+@asset
+def grafico_actividad_municipios_grid(actividad_sc_clean: pd.DataFrame) -> None:
     df = actividad_sc_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     graficos_islas = []
@@ -79,9 +93,6 @@ def grafico_actividad_por_municipio(actividad_sc_clean: pd.DataFrame) -> dict:
             x_text_rotation=45,
             legend_position=legend_position,
         )
-        nombre = isla.lower().replace(" ", "_")
-        # Guardar individualmente
-        #save_graphic(g_isla, DIR.GRAPHS / 'actividad_sc', f"actividad_municipios_{nombre}")
         graficos_islas.append((isla, g_isla))
     save_grid_graphic(
         graficos=graficos_islas,
@@ -89,45 +100,43 @@ def grafico_actividad_por_municipio(actividad_sc_clean: pd.DataFrame) -> dict:
         name="actividad_municipios_grid",
         cols=2
     )
-    # Gráfico por provincia
-    df_islas = df.groupby(["isla", "actividad"])["num_casos"].sum().reset_index()
-    g_provincia = stacked_bars_graphic(
-        df=df_islas,
-        x="isla", y="num_casos", fill="actividad",
-        titulo="Actividad económica por isla",
-        subtitulo="Provincia de Santa Cruz de Tenerife — Total 2021-2023",
-        xlabel="Isla", ylabel="Número de casos",
-        position="fill",
-    )
-    save_graphic(g_provincia, DIR.GRAPHS / 'actividad_sc', "actividad_por_isla")
-    return {
-        'actividad_por_isla' : g_provincia,
-        'grid' : graficos_islas
-    }
 
 # ── ocupacion_sc_clean ────────────────────────────────────────────────────────
 
 @asset
-def grafico_evolucion_ocupacion(ocupacion_sc_clean: pd.DataFrame) -> dict:
+def grafico_evolucion_ocupacion_total(ocupacion_sc_clean: pd.DataFrame) -> ggplot:
     df = ocupacion_sc_clean.groupby(["año", "ocupacion"])["num_casos"].sum().reset_index()
     g = lines_graphic(
         df=df,
         x="año", y="num_casos", color="ocupacion",
-        titulo="Evolución del tipo de ocupación en Tenerife",
+        titulo="Evolución del tipo de ocupación — Provincia de Santa Cruz de Tenerife",
         subtitulo="2021-2023",
         xlabel="Año", ylabel="Número de casos"
     )
-    save_graphic(g, DIR.GRAPHS / 'ocupacion_sc', "evolucion_ocupacion")
-    return {
-        'evolucion_ocupacion' : g
-    }
+    save_graphic(g, DIR.GRAPHS / 'ocupacion_sc', "evolucion_ocupacion_total")
+    return g
 
 @asset
-def grafico_ocupacion_por_municipio(ocupacion_sc_clean: pd.DataFrame) -> dict:
+def grafico_ocupacion_por_isla(ocupacion_sc_clean: pd.DataFrame) -> ggplot:
+    df = ocupacion_sc_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df_islas = df.groupby(["isla", "ocupacion"])["num_casos"].sum().reset_index()
+    g = stacked_bars_graphic(
+        df=df_islas,
+        x="isla", y="num_casos", fill="ocupacion",
+        titulo="Tipo de ocupación por isla — Provincia de Santa Cruz de Tenerife",
+        subtitulo="Total 2021-2023",
+        xlabel="Isla", ylabel="Número de casos",
+        position="fill",
+    )
+    save_graphic(g, DIR.GRAPHS / 'ocupacion_sc', "ocupacion_por_isla")
+    return g
+
+@asset
+def grafico_ocupacion_municipios_grid(ocupacion_sc_clean: pd.DataFrame) -> None:
     df = ocupacion_sc_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     graficos_islas = []
-    # Gráfico por isla de municipios de cada isla
     for isla in sorted(df["isla"].unique()):
         df_isla = (
             df[df["isla"] == isla]
@@ -137,7 +146,6 @@ def grafico_ocupacion_por_municipio(ocupacion_sc_clean: pd.DataFrame) -> dict:
         )
         n_municipios = df_isla["municipio"].nunique()
         x_text_size = 7 if n_municipios > 15 else 9
-        legend_position = "bottom"
         g_isla = stacked_bars_graphic(
             df=df_isla,
             x="municipio", y="num_casos", fill="ocupacion",
@@ -147,10 +155,8 @@ def grafico_ocupacion_por_municipio(ocupacion_sc_clean: pd.DataFrame) -> dict:
             position="fill",
             x_text_size=x_text_size,
             x_text_rotation=45,
-            legend_position=legend_position,
+            legend_position="bottom",
         )
-        nombre = isla.lower().replace(" ", "_")
-        # save_graphic(g_isla, DIR.GRAPHS / 'ocupacion_sc', f"ocupacion_municipios_{nombre}")
         graficos_islas.append((isla, g_isla))
     save_grid_graphic(
         graficos=graficos_islas,
@@ -158,39 +164,31 @@ def grafico_ocupacion_por_municipio(ocupacion_sc_clean: pd.DataFrame) -> dict:
         name="ocupacion_municipios_grid",
         cols=2
     )
-    # Gráfico por isla
-    df_islas = (
-        df.groupby(["isla", "ocupacion"])["num_casos"]
-        .sum()
-        .reset_index()
-    )
-    g_provincia = stacked_bars_graphic(
-        df=df_islas,
-        x="isla", y="num_casos", fill="ocupacion",
-        titulo="Tipo de ocupación por isla — Provincia de Santa Cruz de Tenerife",
-        subtitulo="Total 2021-2023",
-        xlabel="Isla", ylabel="Número de casos",
-        position="fill",
-    )
-    save_graphic(
-        g_provincia,
-        DIR.GRAPHS / 'ocupacion_sc',
-        "ocupacion_por_isla"
-    )
-    return {
-        'ocupacion_por_isla' : g_provincia,
-        'grid' : graficos_islas
-    }
 
 # ── renta_media_clean ─────────────────────────────────────────────────────────
 
 @asset
-def grafico_distribucion_renta_municipios(renta_media_clean: pd.DataFrame) -> dict:
+def grafico_boxplot_renta_islas(renta_media_clean: pd.DataFrame) -> ggplot:
+    df = renta_media_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df_filtrado = df[df["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA"]
+    g = boxplot_graphic(
+        df=df_filtrado,
+        x="isla", y="OBS_VALUE",
+        titulo="Distribución de renta neta media por persona por isla",
+        subtitulo="Provincia de Santa Cruz de Tenerife 2021-2023",
+        xlabel="Isla", ylabel="Renta (€)",
+        x_text_rotation=0,
+    )
+    save_graphic(g, DIR.GRAPHS / 'renta_media', "boxplot_renta_islas")
+    return g
+
+@asset
+def grafico_boxplot_renta_municipios_grid(renta_media_clean: pd.DataFrame) -> None:
     df = renta_media_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     df_filtrado = df[df["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA"]
     graficos_islas = []
-    # Boxplot por isla de municipios de cada isla
     for isla in sorted(df_filtrado["isla"].unique()):
         df_isla = df_filtrado[df_filtrado["isla"] == isla]
         n_municipios = df_isla["municipio"].nunique()
@@ -204,8 +202,6 @@ def grafico_distribucion_renta_municipios(renta_media_clean: pd.DataFrame) -> di
             x_text_size=x_text_size,
             title_size=10
         )
-        nombre = isla.lower().replace(" ", "_")
-        # save_graphic(g_isla, DIR.GRAPHS / 'renta_media', f"boxplot_renta_{nombre}")
         graficos_islas.append((isla, g_isla))
     save_grid_graphic(
         graficos=graficos_islas,
@@ -213,27 +209,34 @@ def grafico_distribucion_renta_municipios(renta_media_clean: pd.DataFrame) -> di
         name="boxplot_renta_municipios_grid",
         cols=2
     )
-    # Boxplot entre islas
-    g_islas = boxplot_graphic(
-        df=df_filtrado,
-        x="isla", y="OBS_VALUE",
-        titulo="Distribución de renta neta media por persona por isla",
-        subtitulo="Provincia de Santa Cruz de Tenerife 2021-2023",
-        xlabel="Isla", ylabel="Renta (€)",
-        x_text_rotation=0,
-    )
-    save_graphic(
-        g_islas,
-        DIR.GRAPHS / 'renta_media',
-        "boxplot_renta_islas"
-    )
-    return {
-        'boxplot_renta_islas' : g_islas,
-        'grid' : graficos_islas
-    }
 
 @asset
-def grafico_ranking_renta_municipios(renta_media_clean: pd.DataFrame) -> dict:
+def grafico_ranking_renta_islas(renta_media_clean: pd.DataFrame) -> ggplot:
+    df = renta_media_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df_islas = (
+        df[
+            (df["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA") &
+            (df["año"] == 2023)
+        ]
+        .groupby("isla")["OBS_VALUE"].mean()
+        .reset_index()
+        .sort_values("OBS_VALUE")
+    )
+    g = bars_graphic(
+        df=df_islas,
+        x="isla", y="OBS_VALUE",
+        titulo="Renta neta media por persona por isla",
+        subtitulo="Provincia de Santa Cruz de Tenerife — Año 2023",
+        xlabel="Isla", ylabel="Renta (€)",
+        horizontal=False,
+        x_text_rotation=0,
+    )
+    save_graphic(g, DIR.GRAPHS / 'renta_media', "ranking_renta_islas")
+    return g
+
+@asset
+def grafico_ranking_renta_municipios_grid(renta_media_clean: pd.DataFrame) -> None:
     df = renta_media_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     graficos_islas = []
@@ -244,8 +247,7 @@ def grafico_ranking_renta_municipios(renta_media_clean: pd.DataFrame) -> dict:
                 (df["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA") &
                 (df["año"] == 2023)
             ]
-            .groupby("municipio")["OBS_VALUE"]
-            .mean()
+            .groupby("municipio")["OBS_VALUE"].mean()
             .reset_index()
             .sort_values("OBS_VALUE")
         )
@@ -261,8 +263,6 @@ def grafico_ranking_renta_municipios(renta_media_clean: pd.DataFrame) -> dict:
             x_text_size=x_text_size,
             x_text_rotation=45,
         )
-        nombre = isla.lower().replace(" ", "_")
-        # save_graphic(g_isla, DIR.GRAPHS / 'renta_media', f"ranking_renta_{nombre}")
         graficos_islas.append((isla, g_isla))
     save_grid_graphic(
         graficos=graficos_islas,
@@ -270,48 +270,35 @@ def grafico_ranking_renta_municipios(renta_media_clean: pd.DataFrame) -> dict:
         name="ranking_renta_municipios_grid",
         cols=2
     )
-    # Ranking por islas
-    df_islas = (
-        df[
-            (df["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA") &
-            (df["año"] == 2023)
-        ]
-        .groupby("isla")["OBS_VALUE"]
-        .mean()
-        .reset_index()
-        .sort_values("OBS_VALUE")
-    )
-    g_islas = bars_graphic(
-        df=df_islas,
-        x="isla", y="OBS_VALUE",
-        titulo="Renta neta media por persona por isla",
-        subtitulo="Provincia de Santa Cruz de Tenerife — Año 2023",
-        xlabel="Isla", ylabel="Renta (€)",
-        horizontal=False,
-        x_text_rotation=0,
-    )
-    save_graphic(
-        g_islas,
-        DIR.GRAPHS / 'renta_media',
-        "ranking_renta_islas"
-    )
-    return {
-        'ranking_renta_islas' : g_islas,
-        'grid' : graficos_islas
-    }
 
 # ── distribucion_renta_clean ──────────────────────────────────────────────────
 
 @asset
-def grafico_fuentes_ingresos_municipio(
-    distribucion_renta_clean: pd.DataFrame
-) -> dict:
+def grafico_fuentes_ingresos_islas(distribucion_renta_clean: pd.DataFrame) -> ggplot:
+    df = distribucion_renta_clean.copy()
+    df = df[df["año"] == 2023]
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
+    df_islas = df.groupby(["isla", "MEDIDAS#es"])["OBS_VALUE"].mean().reset_index()
+    g = stacked_bars_graphic(
+        df=df_islas,
+        x="isla", y="OBS_VALUE", fill="MEDIDAS#es",
+        titulo="Composición de fuentes de ingresos por isla",
+        subtitulo="Porcentaje sobre el total — 2023",
+        xlabel="Isla", ylabel="%",
+        position="fill",
+        legend_position="right"
+    )
+    save_graphic(g, DIR.GRAPHS / "distribucion_renta", "fuentes_ingresos_islas")
+    return g
+
+@asset
+def grafico_fuentes_ingresos_municipios_grid(distribucion_renta_clean: pd.DataFrame) -> None:
     df = distribucion_renta_clean.copy()
     df = df[df["año"] == 2023]
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
     graficos_islas = []
-    # Gráfico por isla
     for isla in sorted(df["isla"].unique()):
         df_isla = (
             df[df["isla"] == isla]
@@ -324,13 +311,10 @@ def grafico_fuentes_ingresos_municipio(
         legend_position = "bottom" if isla == "Tenerife" else "right"
         g_isla = stacked_bars_graphic(
             df=df_isla,
-            x="municipio",
-            y="OBS_VALUE",
-            fill="MEDIDAS#es",
+            x="municipio", y="OBS_VALUE", fill="MEDIDAS#es",
             titulo=f"Fuentes de ingresos por municipio — {isla}",
             subtitulo="Porcentaje sobre el total — 2023",
-            xlabel="Municipio",
-            ylabel="%",
+            xlabel="Municipio", ylabel="%",
             position="fill",
             x_text_size=x_text_size,
             x_text_rotation=45,
@@ -343,83 +327,62 @@ def grafico_fuentes_ingresos_municipio(
         name="fuentes_ingresos_municipios_grid",
         cols=2
     )
-    # Gráfico agregado por isla
-    df_islas = (
-        df.groupby(["isla", "MEDIDAS#es"])["OBS_VALUE"]
-        .mean()
-        .reset_index()
-    )
-    g_islas = stacked_bars_graphic(
-        df=df_islas,
-        x="isla",
-        y="OBS_VALUE",
-        fill="MEDIDAS#es",
-        titulo="Composición de fuentes de ingresos por isla",
-        subtitulo="Porcentaje sobre el total — 2023",
-        xlabel="Isla",
-        ylabel="%",
-        position="fill",
-        legend_position="right"
-    )
-    save_graphic(
-        g_islas,
-        DIR.GRAPHS / "distribucion_renta",
-        "fuentes_ingresos_islas"
-    )
-    return {
-        'fuentes_ingresos_islas' : g_islas,
-        'grid' : graficos_islas
-    }
 
 @asset
-def grafico_heatmap_ingresos(distribucion_renta_clean: pd.DataFrame) -> dict:
+def grafico_heatmap_ingresos_islas(distribucion_renta_clean: pd.DataFrame) -> ggplot:
     df = distribucion_renta_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
-    df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
     df = df[df["año"] == 2023]
-    # TENERIFE FUERA DEL GRID (por densidad)
-    df_tenerife = df[df["isla"] == "Tenerife"]
-    df_tenerife = (
-        df_tenerife
-        .groupby(["municipio", "MEDIDAS#es"])["OBS_VALUE"]
-        .mean()
-        .reset_index()
-    )
-    g_tenerife = heatmap_graphic(
-        df=df_tenerife,
-        x="MEDIDAS#es",
-        y="municipio",
-        fill="OBS_VALUE",
-        titulo="Distribución de fuentes de ingresos — Tenerife",
+    df_islas = df.groupby(["isla", "MEDIDAS#es"])["OBS_VALUE"].mean().reset_index()
+    df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
+    g = heatmap_graphic(
+        df=df_islas,
+        x="MEDIDAS#es", y="isla", fill="OBS_VALUE",
+        titulo="Distribución de fuentes de ingresos por isla",
         subtitulo="Porcentaje (%) — 2023",
-        xlabel="Fuente de ingresos",
-        ylabel="Municipio",
+        xlabel="Fuente de ingresos", ylabel="Isla",
         midpoint=25.0
     )
-    save_graphic(
-        g_tenerife,
-        DIR.GRAPHS / "distribucion_renta",
-        "heatmap_ingresos_tenerife"
+    save_graphic(g, DIR.GRAPHS / "distribucion_renta", "heatmap_ingresos_islas")
+    return g
+
+@asset
+def grafico_heatmap_ingresos_tenerife(distribucion_renta_clean: pd.DataFrame) -> ggplot:
+    df = distribucion_renta_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df = df[(df["isla"] == "Tenerife") & (df["año"] == 2023)]
+    df_tenerife = df.groupby(["municipio", "MEDIDAS#es"])["OBS_VALUE"].mean().reset_index()
+    g = heatmap_graphic(
+        df=df_tenerife,
+        x="MEDIDAS#es", y="municipio", fill="OBS_VALUE",
+        titulo="Distribución de fuentes de ingresos — Tenerife",
+        subtitulo="Porcentaje (%) — 2023",
+        xlabel="Fuente de ingresos", ylabel="Municipio",
+        midpoint=25.0
     )
-    # RESTO DE ISLAS EN GRID
-    df_otros = df[df["isla"] != "Tenerife"]
+    save_graphic(g, DIR.GRAPHS / "distribucion_renta", "heatmap_ingresos_tenerife")
+    return g
+
+@asset
+def grafico_heatmap_ingresos_otras_islas_grid(distribucion_renta_clean: pd.DataFrame) -> None:
+    df = distribucion_renta_clean.copy()
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    df = df[(df["isla"] != "Tenerife") & (df["año"] == 2023)]
+    df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
     graficos_islas = []
-    for isla in sorted(df_otros["isla"].unique()):
+    for isla in sorted(df["isla"].unique()):
         df_isla = (
-            df_otros[df_otros["isla"] == isla]
+            df[df["isla"] == isla]
             .groupby(["municipio", "MEDIDAS#es"])["OBS_VALUE"]
             .mean()
             .reset_index()
         )
         g_isla = heatmap_graphic(
             df=df_isla,
-            x="MEDIDAS#es",
-            y="municipio",
-            fill="OBS_VALUE",
+            x="MEDIDAS#es", y="municipio", fill="OBS_VALUE",
             titulo=f"Distribución de fuentes de ingresos — {isla}",
             subtitulo="Porcentaje (%) — 2023",
-            xlabel="Fuente de ingresos",
-            ylabel="Municipio",
+            xlabel="Fuente de ingresos", ylabel="Municipio",
             midpoint=25.0
         )
         graficos_islas.append((isla, g_isla))
@@ -429,106 +392,100 @@ def grafico_heatmap_ingresos(distribucion_renta_clean: pd.DataFrame) -> dict:
         name="heatmap_ingresos_otras_islas_grid",
         cols=2
     )
-    # HEATMAP GLOBAL POR ISLA
-    df_islas = (
-        df.groupby(["isla", "MEDIDAS#es"])["OBS_VALUE"]
-        .mean()
+
+# ── combinados ────────────────────────────────────────────────────────────────
+
+@asset
+def grafico_scatter_renta_ocupacion(
+    ocupacion_sc_clean: pd.DataFrame,
+    renta_media_clean: pd.DataFrame
+) -> ggplot:
+    AÑO = 2023
+    col_val = "num_casos" if "num_casos" in ocupacion_sc_clean.columns else "num_cases"
+    filtro_ocupacion = "Directores/gerentes y profesionales/técnicos de nivel medio o alto"
+
+    df_ocu = ocupacion_sc_clean[ocupacion_sc_clean["año"] == AÑO].copy()
+    totales = df_ocu.groupby("municipio")[col_val].sum().reset_index()
+    totales.columns = ["municipio", "total"]
+    cualificados = (
+        df_ocu[df_ocu["ocupacion"] == filtro_ocupacion]
+        .groupby("municipio")[col_val].sum()
         .reset_index()
     )
-    g_islas = heatmap_graphic(
-        df=df_islas,
-        x="MEDIDAS#es",
-        y="isla",
-        fill="OBS_VALUE",
-        titulo="Distribución de fuentes de ingresos por isla",
-        subtitulo="Porcentaje (%) — 2023",
-        xlabel="Fuente de ingresos",
-        ylabel="Isla",
-        midpoint=25.0
-    )
-    save_graphic(
-        g_islas,
-        DIR.GRAPHS / "distribucion_renta",
-        "heatmap_ingresos_islas"
-    )
-    return {
-        'tenerife' : g_tenerife,
-        'heatmap_ingresos_islas' : g_islas,
-        'grid' : graficos_islas
-    }
+    cualificados.columns = ["municipio", "num_cualificados"]
+    stats = totales.merge(cualificados, on="municipio", how="left").fillna(0)
+    stats["pct_cualificado"] = stats["num_cualificados"] / stats["total"] * 100
 
-# ── ocupacion_sc_clean + renta_media_clean ────────────────────────────────────
+    renta = (
+        renta_media_clean[
+            (renta_media_clean["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA") &
+            (renta_media_clean["año"] == AÑO)
+        ]
+        .groupby("municipio")["OBS_VALUE"].mean()
+        .reset_index()
+    )
+
+    df = stats.merge(renta, on="municipio")
+    df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+
+    g = scatter_graphic(
+        df=df,
+        x="OBS_VALUE", y="pct_cualificado",
+        color="isla",
+        titulo="Renta media vs trabajo cualificado por municipio",
+        subtitulo=f"Cada punto es un municipio — {AÑO}",
+        xlabel="Renta neta media por persona (€)",
+        ylabel="% trabajo cualificado"
+    )
+    # save_graphic(g, DIR.GRAPHS / "combinados", f"scatter_renta_ocupacion_{AÑO}")
+    return g
 
 @asset
 def grafico_scatter_renta_ocupacion_grid(
     ocupacion_sc_clean: pd.DataFrame,
     renta_media_clean: pd.DataFrame
-) -> dict:
-    # Identificar años comunes y columna de valor
-    anos_comunes = sorted(list(set(ocupacion_sc_clean["año"]).intersection(set(renta_media_clean["año"]))))
+) -> None:
+    anos_comunes = sorted(set(ocupacion_sc_clean["año"]) & set(renta_media_clean["año"]))
     col_val = "num_casos" if "num_casos" in ocupacion_sc_clean.columns else "num_cases"
     filtro_ocupacion = "Directores/gerentes y profesionales/técnicos de nivel medio o alto"
     graficos_anuales = []
     for ano in anos_comunes:
-        df_ocu_ano = ocupacion_sc_clean[ocupacion_sc_clean["año"] == ano].copy()
-        df_renta_ano = renta_media_clean[
-            (renta_media_clean["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA") & 
-            (renta_media_clean["año"] == ano)
-        ].copy()
-        if df_ocu_ano.empty or df_renta_ano.empty:
-            continue
-        # Total por municipio
-        totales = df_ocu_ano.groupby("municipio")[col_val].sum().reset_index()
-        totales.columns = ["municipio", "total_municipio"]
-        # Cualificados por municipio (con precaución si el filtro es vacío)
-        df_filtro = df_ocu_ano[df_ocu_ano["ocupacion"] == filtro_ocupacion]
-        if not df_filtro.empty:
-            cualificados = df_filtro.groupby("municipio")[col_val].sum().reset_index()
-            cualificados.columns = ["municipio", "num_cualificados"]
-        else:
-            # Si no hay nadie cualificado ese año, creamos df vacío con las columnas correctas
-            cualificados = pd.DataFrame(columns=["municipio", "num_cualificados"])
-        # Unir totales con cualificados
-        stats_ocupacion = totales.merge(cualificados, on="municipio", how="left")
-        # Asegurar que la columna existe 
-        if "num_cualificados" not in stats_ocupacion.columns:
-            stats_ocupacion["num_cualificados"] = 0.0
-        stats_ocupacion["num_cualificados"] = stats_ocupacion["num_cualificados"].fillna(0)
-        stats_ocupacion["pct_cualificado"] = (stats_ocupacion["num_cualificados"] / stats_ocupacion["total_municipio"]) * 100
-        renta_mun = df_renta_ano.groupby("municipio")["OBS_VALUE"].mean().reset_index()
-        df_plot = stats_ocupacion.merge(renta_mun, on="municipio", how="inner")
-        if df_plot.empty:
-            continue
-        df_plot["isla"] = df_plot["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
-        df_plot = df_plot.dropna(subset=["OBS_VALUE", "pct_cualificado", "isla"])
-        df_plot["isla"] = df_plot["isla"].astype(str)
+        df_ocu = ocupacion_sc_clean[ocupacion_sc_clean["año"] == ano].copy()
+        renta = (
+            renta_media_clean[
+                (renta_media_clean["MEDIDAS_CODE"] == "RENTA_NETA_MEDIA_PERSONA") &
+                (renta_media_clean["año"] == ano)
+            ]
+            .groupby("municipio")["OBS_VALUE"].mean()
+            .reset_index()
+        )
+        totales = df_ocu.groupby("municipio")[col_val].sum().reset_index()
+        totales.columns = ["municipio", "total"]
+        cualificados = (
+            df_ocu[df_ocu["ocupacion"] == filtro_ocupacion]
+            .groupby("municipio")[col_val].sum()
+            .reset_index()
+        )
+        cualificados.columns = ["municipio", "num_cualificados"]
+        stats = totales.merge(cualificados, on="municipio", how="left").fillna(0)
+        stats["pct_cualificado"] = stats["num_cualificados"] / stats["total"] * 100
+        df = stats.merge(renta, on="municipio")
+        df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
         g = scatter_graphic(
-            df=df_plot,
-            x="OBS_VALUE", 
-            y="pct_cualificado",
+            df=df,
+            x="OBS_VALUE", y="pct_cualificado",
             color="isla",
             titulo=f"Año {ano}",
             subtitulo="Renta media vs. % Trabajo cualificado",
-            xlabel="Renta (€)",
-            ylabel="% Cualificado"
+            xlabel="Renta (€)", ylabel="% Cualificado"
         )
         graficos_anuales.append((str(ano), g))
-    if graficos_anuales:
-        save_grid_graphic(
-            graficos=graficos_anuales,
-            path=DIR.GRAPHS / "combinados",
-            name="scatter_renta_ocupacion_grid",
-            cols=2,
-            width=18,
-            height=12
-        )
-        # Guardar el último año disponible por separado
-        #ultimo_ano, ultimo_g = graficos_anuales[-1]
-        #save_graphic(ultimo_g, DIR.GRAPHS / "combinados", f"scatter_renta_ocupacion_{ultimo_ano}")
-    return {
-        #f"scatter_renta_ocupacion_{ultimo_ano}" : ultimo_g,
-        'grid' : graficos_anuales
-    }
+    save_grid_graphic(
+        graficos=graficos_anuales,
+        path=DIR.GRAPHS / "combinados",
+        name="scatter_renta_ocupacion_grid",
+        cols=2, width=18, height=12
+    )
 
 # ── GeoJSON + renta_media_clean ───────────────────────────────────────────────
 
@@ -538,12 +495,8 @@ def grafico_mapa_renta_evolucion_grid(
     secciones_2022: gpd.GeoDataFrame,
     secciones_2023: gpd.GeoDataFrame,
     renta_media_clean: pd.DataFrame
-) -> dict:
-    periodos = [
-        (2021, secciones_2021),
-        (2022, secciones_2022),
-        (2023, secciones_2023)
-    ]
+) -> None:
+    periodos = [(2021, secciones_2021), (2022, secciones_2022), (2023, secciones_2023)]
     graficos_mapas = []
     for ano, gdf_base in periodos:
         renta_ano = (
@@ -562,33 +515,36 @@ def grafico_mapa_renta_evolucion_grid(
             fill="OBS_VALUE",
             titulo=f"Año {ano}",
             subtitulo="Renta neta media por persona",
-            low="#013468", # Azul oscuro
-            mid="#f7f7f7", # Gris claro
-            high="#b2182b"  # Rojo
+            low="#013468", mid="#f7f7f7", high="#b2182b"
         )
         graficos_mapas.append((str(ano), g))
     save_grid_graphic(
         graficos=graficos_mapas,
         path=DIR.GRAPHS,
         name="mapa_renta_evolucion_grid",
-        cols=2,
-        width=25
+        cols=2, width=25
     )
-    return {
-        'grid' : graficos_mapas
-    }
 
 # ── Exports ───────────────────────────────────────────────────────────────────
 
 graphics_assets = [
-    grafico_evolucion_actividad,
-    grafico_actividad_por_municipio,
-    grafico_evolucion_ocupacion,
-    grafico_ocupacion_por_municipio,
-    grafico_distribucion_renta_municipios,
-    grafico_ranking_renta_municipios,
-    grafico_fuentes_ingresos_municipio,
-    grafico_heatmap_ingresos,
+    grafico_evolucion_actividad_total,
+    grafico_evolucion_actividad_grid,
+    grafico_actividad_por_isla,
+    grafico_actividad_municipios_grid,
+    grafico_evolucion_ocupacion_total,
+    grafico_ocupacion_por_isla,
+    grafico_ocupacion_municipios_grid,
+    grafico_boxplot_renta_islas,
+    grafico_boxplot_renta_municipios_grid,
+    grafico_ranking_renta_islas,
+    grafico_ranking_renta_municipios_grid,
+    grafico_fuentes_ingresos_islas,
+    grafico_fuentes_ingresos_municipios_grid,
+    grafico_heatmap_ingresos_islas,
+    grafico_heatmap_ingresos_tenerife,
+    grafico_heatmap_ingresos_otras_islas_grid,
+    grafico_scatter_renta_ocupacion,
     grafico_scatter_renta_ocupacion_grid,
     grafico_mapa_renta_evolucion_grid,
 ]

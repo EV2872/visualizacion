@@ -1,10 +1,11 @@
 import os
-from dagster import AssetSelection, RunRequest, SensorEvaluationContext, define_asset_job, sensor
+from dagster import AssetSelection, RunRequest, SensorEvaluationContext, define_asset_job, in_process_executor, sensor
 
 # JOB: todos los assets
 pipeline_job = define_asset_job(
     name="pipeline_completo",
-    selection=AssetSelection.all()
+    selection=AssetSelection.all(),
+    executor_def=in_process_executor
 )
 
 # vigila cambios en la carpeta data/

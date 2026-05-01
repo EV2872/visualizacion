@@ -4,7 +4,7 @@ from preprocessing import preprocess_assets, preprocess_checks
 from graphics import graphics_assets
 from graphics_checks import graphics_checks
 from job import pipeline_job, sensors_array
-from dagster import Definitions
+from dagster import Definitions, in_process_executor, mem_io_manager
 from common_data import *
 from preprocessing import *
 
@@ -18,5 +18,9 @@ defs = Definitions(
     assets=[*load_assets, *eda_assets, *preprocess_assets, *graphics_assets],
     asset_checks=[*load_checks, *preprocess_checks, *graphics_checks],
     jobs=[pipeline_job],
-    sensors=[*sensors_array]
+    sensors=[*sensors_array],
+    resources={
+        "io_manager": mem_io_manager,
+    },
+    executor=in_process_executor
 )
