@@ -1,0 +1,25 @@
+graphics_checks = [
+    '''
+    check_evolucion_actividad_geom,
+    check_evolucion_actividad_data,
+    check_evolucion_actividad_grid,
+    check_actividad_municipio_geom,
+    check_actividad_municipio_grid,
+    check_evolucion_ocupacion_geom,
+    check_evolucion_ocupacion_data,
+    check_ocupacion_municipio_geom,
+    check_ocupacion_municipio_grid,
+    check_distribucion_renta_geom,
+    check_distribucion_renta_grid,
+    check_ranking_renta_geom,
+    check_ranking_renta_grid,
+    check_fuentes_ingresos_geom,
+    check_fuentes_ingresos_grid,
+    check_heatmap_ingresos_geom,
+    check_heatmap_ingresos_grid,
+    check_scatter_renta_ocupacion_geom,
+    check_scatter_renta_ocupacion_años,
+    check_mapa_renta_grid,
+    check_mapa_renta_geom,
+    '''
+]
