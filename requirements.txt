@@ -1,4 +1,5 @@
-dagster 
+dagster
+dagster-dg
 dagster-webserver
 pandas
 geopandas 
