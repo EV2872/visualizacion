@@ -6,7 +6,7 @@ class DIR:
     PROJECT_ROOT: Path = Path(__file__).parent.parent  # proyecto
     DATA: Path = Path(PROJECT_ROOT / 'data/')
     DATA_CATOGRAFIA: Path = Path(DATA / 'cartografia-secciones/')
-    GRAPHS: Path = Path(PROJECT_ROOT / 'graficos2/')
+    GRAPHS: Path = Path(PROJECT_ROOT / 'graficos/')
 
 @dataclass(frozen=True)
 class FORMAT:

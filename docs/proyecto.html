@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyecto Final - S.C. Tenerife</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: auto; padding: 30px; background-color: #f4f7f9; }
+    h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 10px; text-align: center; }
+    h2 { color: white; background: #1a237e; padding: 12px 20px; border-radius: 8px; margin-top: 60px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    h3 { color: #1565c0; margin-top: 35px; border-left: 5px solid #1565c0; padding-left: 15px; background: #e3f2fd; padding-top: 5px; padding-bottom: 5px; }
+    
+    .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .back { display: inline-block; margin-bottom: 25px; color: #d32f2f; text-decoration: none; font-weight: bold; font-size: 1.1em; }
+    .back:hover { text-decoration: underline; }
+    
+    .img-box { text-align: center; margin: 40px 0; padding: 15px; border: 1px solid #eee; border-radius: 10px; background: #fff; }
+    .img-box p { font-size: 0.9em; color: #666; font-style: italic; margin-top: 10px; }
+    
+    img { max-width: 100%; height: auto; border-radius: 5px; transition: transform 0.3s ease; }
+    img:hover { transform: scale(1.01); }
+    
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 25px 0; }
+    
+    .intro { background: #fffde7; padding: 20px; border-radius: 10px; border-left: 6px solid #fbc02d; margin-bottom: 30px; }
+
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back">← Volver al Menú Principal</a>
+    <h1>Análisis Socioeconómico: Provincia de S.C. Tenerife</h1>
+    
+    <div class="intro">
+      <p>Este dashboard presenta los resultados finales del análisis de la provincia de Santa Cruz de Tenerife (Tenerife, La Palma, La Gomera y El Hierro) utilizando datos oficiales del periodo 2021-2023.</p>
+    </div>
+
+    <!-- SECCIÓN 1: ACTIVIDAD ECONÓMICA -->
+    <h2>1. Actividad Económica</h2>
+    <p>Análisis de los sectores productivos y su evolución en la provincia.</p>
+    
+    <div class="grid">
+      <div class="img-box">
+        <h3>Evolución Total Provincia</h3>
+        <img src="../proyecto/graficos/actividad_sc/evolucion_actividad_total.png" alt="Evolución Actividad Total">
+      </div>
+      <div class="img-box">
+        <h3>Distribución por Isla</h3>
+        <img src="../proyecto/graficos/actividad_sc/actividad_por_isla.png" alt="Actividad por Isla">
+      </div>
+    </div>
+
+    <div class="img-box">
+      <h3>Evolución Temporal por Isla (Grid)</h3>
+      <img src="../proyecto/graficos/actividad_sc/evolucion_actividad_grid.png" alt="Evolución Actividad Grid">
+    </div>
+
+    <div class="img-box">
+      <h3>Estructura Económica Municipal por Isla</h3>
+      <img src="../proyecto/graficos/actividad_sc/actividad_municipios_grid.png" alt="Actividad Municipios Grid">
+    </div>
+
+
+    <!-- SECCIÓN 2: MERCADO LABORAL Y OCUPACIÓN -->
+    <h2>2. Ocupación y Mercado Laboral</h2>
+    
+    <div class="grid">
+      <div class="img-box">
+        <h3>Evolución Tipos de Ocupación</h3>
+        <img src="../proyecto/graficos/ocupacion_sc/evolucion_ocupacion_total.png" alt="Evolución Ocupación Total">
+      </div>
+      <div class="img-box">
+        <h3>Ocupación por Isla</h3>
+        <img src="../proyecto/graficos/ocupacion_sc/ocupacion_por_isla.png" alt="Ocupación por Isla">
+      </div>
+    </div>
+
+    <div class="img-box">
+      <h3>Estructura de Ocupación Municipal (Grid)</h3>
+      <img src="../proyecto/graficos/ocupacion_sc/ocupacion_municipios_grid.png" alt="Ocupación Municipios Grid">
+    </div>
+
+
+    <!-- SECCIÓN 3: RENTA MEDIA -->
+    <h2>3. Renta Media por Persona</h2>
+    
+    <div class="grid">
+      <div class="img-box">
+        <h3>Ranking de Renta por Isla</h3>
+        <img src="../proyecto/graficos/renta_media/ranking_renta_islas.png" alt="Ranking Renta Islas">
+      </div>
+      <div class="img-box">
+        <h3>Distribución de Renta (Boxplot)</h3>
+        <img src="../proyecto/graficos/renta_media/boxplot_renta_islas.png" alt="Boxplot Renta Islas">
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="img-box">
+        <h3>Ranking Municipal de Renta (Grid)</h3>
+        <img src="../proyecto/graficos/renta_media/ranking_renta_municipios_grid.png" alt="Ranking Renta Municipios Grid">
+      </div>
+      <div class="img-box">
+        <h3>Dispersión Municipal por Isla (Boxplot)</h3>
+        <img src="../proyecto/graficos/renta_media/boxplot_renta_municipios_grid.png" alt="Boxplot Renta Municipios Grid">
+      </div>
+    </div>
+
+
+    <!-- SECCIÓN 4: FUENTES Y ORIGEN DE LA RENTA -->
+    <h2>4. Fuentes de Ingresos</h2>
+    
+    <div class="grid">
+      <div class="img-box">
+        <h3>Composición de Ingresos por Isla</h3>
+        <img src="../proyecto/graficos/distribucion_renta/fuentes_ingresos_islas.png" alt="Fuentes Ingresos Islas">
+      </div>
+      <div class="img-box">
+        <h3>Mapa de Calor (Heatmap) por Isla</h3>
+        <img src="../proyecto/graficos/distribucion_renta/heatmap_ingresos_islas.png" alt="Heatmap Ingresos Islas">
+      </div>
+    </div>
+
+    <div class="img-box">
+      <h3>Detalle Fuentes de Ingresos: Tenerife</h3>
+      <img src="../proyecto/graficos/distribucion_renta/heatmap_ingresos_tenerife.png" alt="Heatmap Ingresos Tenerife">
+    </div>
+
+    <div class="grid">
+      <div class="img-box">
+        <h3>Composición Municipal (Grid)</h3>
+        <img src="../proyecto/graficos/distribucion_renta/fuentes_ingresos_municipios_grid.png" alt="Fuentes Ingresos Municipios Grid">
+      </div>
+      <div class="img-box">
+        <h3>Heatmap Municipios: Resto de Islas</h3>
+        <img src="../proyecto/graficos/distribucion_renta/heatmap_ingresos_otras_islas_grid.png" alt="Heatmap Ingresos Otras Islas">
+      </div>
+    </div>
+
+
+    <!-- SECCIÓN 5: ANÁLISIS GEOESPACIAL -->
+    <h2>5. Mapas de Renta</h2>
+    <p>Visualización por secciones censales de la evolución de la riqueza.</p>
+    
+    <div class="img-box">
+      <h3>Evolución 2021 - 2023 por Sección Censal</h3>
+      <img src="../proyecto/graficos/mapa_renta_evolucion_grid.png" alt="Evolución Mapas Renta">
+    </div>
+
+
+    <!-- SECCIÓN 6: CORRELACIONES -->
+    <h2>6. Correlaciones Combinadas</h2>
+    
+    <div class="img-box">
+      <h3>Renta vs. % Trabajo Cualificado (Evolución)</h3>
+      <img src="../proyecto/graficos/combinados/scatter_renta_ocupacion_grid.png" alt="Scatter Renta Ocupación Grid">
+      <p>Relación entre el nivel de ingresos y el porcentaje de ocupaciones técnicas/gerenciales.</p>
+    </div>
+
+    <footer style="text-align: center; margin-top: 80px; padding: 20px; color: #777; border-top: 1px solid #ddd;">
+      <p>Proyecto Visualización de Datos - Master Visualización VEM</p>
+      <p>© 2024 - Provincia de Santa Cruz de Tenerife</p>
+    </footer>
+  </div>
+</body>
+</html>
