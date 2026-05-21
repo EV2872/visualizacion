@@ -283,6 +283,7 @@ def grafico_fuentes_ingresos_islas(distribucion_renta_clean: pd.DataFrame) -> gg
     g = stacked_bars_graphic(
         df=df_islas,
         x="isla", y="OBS_VALUE", fill="MEDIDAS#es",
+        fill_label='Fuente de ingresos',
         titulo="Composición de fuentes de ingresos por isla",
         subtitulo="Porcentaje sobre el total — 2023",
         xlabel="Isla", ylabel="%",
@@ -312,6 +313,7 @@ def grafico_fuentes_ingresos_municipios_grid(distribucion_renta_clean: pd.DataFr
         g_isla = stacked_bars_graphic(
             df=df_isla,
             x="municipio", y="OBS_VALUE", fill="MEDIDAS#es",
+            fill_label='Fuente de ingresos',
             titulo=f"Fuentes de ingresos por municipio — {isla}",
             subtitulo="Porcentaje sobre el total — 2023",
             xlabel="Municipio", ylabel="%",
@@ -333,11 +335,12 @@ def grafico_heatmap_ingresos_islas(distribucion_renta_clean: pd.DataFrame) -> gg
     df = distribucion_renta_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     df = df[df["año"] == 2023]
-    df_islas = df.groupby(["isla", "MEDIDAS#es"])["OBS_VALUE"].mean().reset_index()
     df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
+    df_islas = df.groupby(["isla", "MEDIDAS#es"])["OBS_VALUE"].mean().reset_index()
     g = heatmap_graphic(
         df=df_islas,
         x="MEDIDAS#es", y="isla", fill="OBS_VALUE",
+        fill_label='% Ingresos',
         titulo="Distribución de fuentes de ingresos por isla",
         subtitulo="Porcentaje (%) — 2023",
         xlabel="Fuente de ingresos", ylabel="Isla",
@@ -355,6 +358,7 @@ def grafico_heatmap_ingresos_tenerife(distribucion_renta_clean: pd.DataFrame) ->
     g = heatmap_graphic(
         df=df_tenerife,
         x="MEDIDAS#es", y="municipio", fill="OBS_VALUE",
+        fill_label='% Ingresos',
         titulo="Distribución de fuentes de ingresos — Tenerife",
         subtitulo="Porcentaje (%) — 2023",
         xlabel="Fuente de ingresos", ylabel="Municipio",
@@ -368,7 +372,7 @@ def grafico_heatmap_ingresos_otras_islas_grid(distribucion_renta_clean: pd.DataF
     df = distribucion_renta_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
     df = df[(df["isla"] != "Tenerife") & (df["año"] == 2023)]
-    df = df[df["isla"].isin(["Tenerife", "La Palma", "La Gomera", "El Hierro"])]
+    df = df[df["isla"].isin(["La Palma", "La Gomera", "El Hierro"])]
     graficos_islas = []
     for isla in sorted(df["isla"].unique()):
         df_isla = (
@@ -380,6 +384,7 @@ def grafico_heatmap_ingresos_otras_islas_grid(distribucion_renta_clean: pd.DataF
         g_isla = heatmap_graphic(
             df=df_isla,
             x="MEDIDAS#es", y="municipio", fill="OBS_VALUE",
+            fill_label='% Ingresos',
             titulo=f"Distribución de fuentes de ingresos — {isla}",
             subtitulo="Porcentaje (%) — 2023",
             xlabel="Fuente de ingresos", ylabel="Municipio",
@@ -513,6 +518,7 @@ def grafico_mapa_renta_evolucion_grid(
         g = choropleth_map_graphic(
             gdf=gdf,
             fill="OBS_VALUE",
+            fill_label='Renta (€)',
             titulo=f"Año {ano}",
             subtitulo="Renta neta media por persona",
             low="#013468", mid="#f7f7f7", high="#b2182b"

@@ -92,7 +92,7 @@ def bars_graphic(
     )
 
 def stacked_bars_graphic(
-    df, x, y, fill, titulo, subtitulo="", xlabel="", ylabel="",
+    df, x, y, fill, titulo, subtitulo="", xlabel="", ylabel="", fill_label=None,
     palette="Set2", position="stack",
     x_text_size=9, x_text_rotation=45,
     legend_position="right",
@@ -100,7 +100,7 @@ def stacked_bars_graphic(
     return (
         ggplot(df, aes(x=x, y=y, fill=fill))
         + geom_col(position=position)
-        + labs(title=titulo, subtitle=subtitulo, x=xlabel, y=ylabel, fill=fill)
+        + labs(title=titulo, subtitle=subtitulo, x=xlabel, y=ylabel, fill=fill_label or fill)
         + scale_fill_brewer(type="qual", palette=palette)
         + scale_y_continuous(expand=(0, 0))
         + theme_minimal()
@@ -144,7 +144,8 @@ def heatmap_graphic(
     x: str,
     y: str,
     fill: str,
-    titulo: str,
+    fill_label=None,
+    titulo: str = "",
     subtitulo: str = "",
     xlabel: str = "",
     ylabel: str = "",
@@ -167,7 +168,7 @@ def heatmap_graphic(
             subtitle=subtitulo,
             x=xlabel,
             y=ylabel,
-            fill=fill
+            fill=fill_label or fill
         )
         + scale_fill_gradient2(
             low=low,
@@ -228,7 +229,8 @@ def scatter_graphic(
 def choropleth_map_graphic(
     gdf: gpd.GeoDataFrame,
     fill: str,
-    titulo: str,
+    fill_label=None,
+    titulo: str = "",
     subtitulo: str = "",
     low: str = "#FFF9C4",
     mid: str = "#f7f7f7",
@@ -237,7 +239,7 @@ def choropleth_map_graphic(
     return (
         ggplot(gdf)
         + geom_map(aes(fill=fill), color="white", size=0.1)
-        + labs(title=titulo, subtitle=subtitulo, fill=fill)
+        + labs(title=titulo, subtitle=subtitulo, fill=fill_label or fill)
         +  scale_fill_gradient2(low=low, mid=mid, high=high, midpoint=gdf[fill].median())
         + coord_fixed()
         + theme_minimal()
