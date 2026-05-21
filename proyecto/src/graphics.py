@@ -136,6 +136,13 @@ def grafico_ocupacion_por_isla(ocupacion_sc_clean: pd.DataFrame) -> ggplot:
 def grafico_ocupacion_municipios_grid(ocupacion_sc_clean: pd.DataFrame) -> None:
     df = ocupacion_sc_clean.copy()
     df["isla"] = df["municipio"].map(MUNICIPIO_ISLA).fillna("Tenerife")
+    print('===========================================')
+    municipios_ocupacion = set(df["municipio"].unique())
+    municipios_mapeados_palma = {m for m, isla in MUNICIPIO_ISLA.items() if isla == "La Palma"}
+    print("Faltan en MUNICIPIO_ISLA:", municipios_ocupacion - set(MUNICIPIO_ISLA.keys()))
+    print("Mapeados como La Palma:", municipios_mapeados_palma)
+    print('===========================================')
+
     graficos_islas = []
     for isla in sorted(df["isla"].unique()):
         df_isla = (
