@@ -35,6 +35,13 @@ def _is_mapped(g, aesthetic, column_name) -> bool:
         return g.layers[0].mapping[aesthetic] == column_name
     return False
 
+def _axis_starts_at_zero(g, aesthetic="y") -> bool:
+    for scale in g.scales:
+        if aesthetic in scale.aesthetics:
+            if scale.limits is not None:
+                return scale.limits[0] == 0
+    return True
+
 # ── actividad ─────────────────────────────────────────────────────────────────
 
 @asset_check(asset=grafico_evolucion_actividad_total)
@@ -73,6 +80,15 @@ def check_actividad_isla_integridad(grafico_actividad_por_isla) -> AssetCheckRes
         metadata={"islas_encontradas": list(grafico_actividad_por_isla.data["isla"].unique())}
     )
 
+@asset_check(asset=grafico_actividad_por_isla)
+def check_actividad_isla_eje_y_cero(grafico_actividad_por_isla) -> AssetCheckResult:
+    passed = _axis_starts_at_zero(grafico_actividad_por_isla, "y")
+    return AssetCheckResult(
+        passed=passed,
+        metadata={"mensaje": "El eje Y debe empezar en 0 para gráficos de barras para mantener la integridad visual"}
+    )
+        
+
 # ── ocupacion ─────────────────────────────────────────────────────────────────
 
 @asset_check(asset=grafico_evolucion_ocupacion_total)
@@ -110,6 +126,15 @@ def check_ocupacion_isla_data(grafico_ocupacion_por_isla) -> AssetCheckResult:
         passed=_data_ok(grafico_ocupacion_por_isla),
         metadata={"filas": len(grafico_ocupacion_por_isla.data)}
     )
+
+@asset_check(asset=grafico_ocupacion_por_isla)
+def check_ocupacion_isla_eje_y_cero(grafico_ocupacion_por_isla) -> AssetCheckResult:
+    passed = _axis_starts_at_zero(grafico_ocupacion_por_isla, "y")
+    return AssetCheckResult(
+        passed=passed,
+        metadata={"mensaje": "Eje Y verificado en el origen (0)"}
+    )
+
 
 # ── renta ─────────────────────────────────────────────────────────────────────
 
@@ -169,6 +194,14 @@ def check_fuentes_ingresos_data(grafico_fuentes_ingresos_islas) -> AssetCheckRes
     return AssetCheckResult(
         passed=_data_ok(grafico_fuentes_ingresos_islas),
         metadata={"filas": len(grafico_fuentes_ingresos_islas.data)}
+    )
+
+@asset_check(asset=grafico_fuentes_ingresos_islas)
+def check_fuentes_ingresos_eje_y_cero(grafico_fuentes_ingresos_islas) -> AssetCheckResult:
+    passed = _axis_starts_at_zero(grafico_fuentes_ingresos_islas, "y")
+    return AssetCheckResult(
+        passed=passed,
+        metadata={"mensaje": "Garantiza que la comparación de porcentajes sea honesta"}
     )
 
 @asset_check(asset=grafico_heatmap_ingresos_islas)
@@ -257,4 +290,7 @@ graphics_checks = [
     check_renta_valores_realistas,
     check_scatter_correlacion_logica,
     check_heatmap_tenerife_completitud,
+    check_actividad_isla_eje_y_cero,
+    check_ocupacion_isla_eje_y_cero,
+    check_fuentes_ingresos_eje_y_cero,
 ]
