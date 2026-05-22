@@ -503,12 +503,12 @@ def grafico_scatter_renta_ocupacion_grid(
 
 @asset
 def grafico_mapa_renta_evolucion_grid(
-    secciones_2021: gpd.GeoDataFrame,
     secciones_2022: gpd.GeoDataFrame,
     secciones_2023: gpd.GeoDataFrame,
+    secciones_2024: gpd.GeoDataFrame,
     renta_media_clean: pd.DataFrame
 ) -> None:
-    periodos = [(2021, secciones_2021), (2022, secciones_2022), (2023, secciones_2023)]
+    periodos = [(2021, secciones_2022), (2022, secciones_2023), (2023, secciones_2024)]
     graficos_mapas = []
     for ano, gdf_base in periodos:
         renta_ano = (
